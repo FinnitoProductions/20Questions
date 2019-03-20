@@ -17,6 +17,7 @@
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
 
 (do-backward-chaining landBased) 
+(do-backward-chaining warmBlooded)
 
 /*
 * Asks the user whether the animal they are thinking of is land-based. Triggers when the system
@@ -33,13 +34,50 @@
 )
 
 /*
+* Asks the user whether the animal they are thinking of is warm-blooded Triggers when the system
+* needs to determine whether the animal is warm-blooded to rule out certain options.
+*/
+(defrule askWarmBlooded "Ask if the animal the user is thinking of is warm-blooded"
+   (need-warmBlooded ?)
+   =>
+   (bind ?userResponse (askForFact "Is the given animal warm-blooded"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (warmBlooded yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (warmBlooded no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (warmBlooded unsure))
+   )
+)
+
+/*
 * Defines the characteristics representative of a dolphin. If all these are met, 
 * will print that the animal is a dolphin.
 */
 (defrule dolphinRule "Represents a standard dolphin."
    (landBased no)
+   (warmBlooded yes)
    =>
    (printout t "The animal is a dolphin." crlf)
+)
+
+/*
+* Defines the characteristics representative of a dog. If all these are met, 
+* will print that the animal is a dog.
+*/
+(defrule dogRule "Represents a standard dog."
+   (landBased yes)
+   (warmBlooded yes)
+   =>
+   (printout t "The animal is a dog." crlf)
+)
+
+/*
+* Defines the characteristics representative of a tortoise. If all these are met, 
+* will print that the animal is a tortoise.
+*/
+(defrule tortoiseRule "Represents a standard tortoise."
+   (landBased yes)
+   (warmBlooded no)
+   =>
+   (printout t "The animal is a tortoise." crlf)
 )
 
 
