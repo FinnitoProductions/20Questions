@@ -18,12 +18,26 @@
 
 (do-backward-chaining landBased) 
 (do-backward-chaining warmBlooded)
+(do-backward-chaining legs)
+(do-backward-chaining canSurviveOnLand)
 
+(deffunction setup ()
+   (printline 
+"Welcome to the Think of an Animal Game!
+Choose one of the following animals: dolphin, dog, snake, elephant, sea lion,
+penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, parrot, water buffalo,
+bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
+I will use the information from these questions to guess which animal you are thinking of once I have 
+enough information. Good luck!"
+   )
+   (return)
+)
+               
 /*
 * Asks the user whether the animal they are thinking of is land-based. Triggers when the system
-* needs to determine whether the animal is land-based to rule out certain options.
+* needs to determine whether the animal is land-based to narrow down the possibilities of the given animal.
 */
-(defrule askLandBased "Ask if the animal the user is thinking of lives on land"
+(defrule askLandBased "Ask if the animal the user is thinking of lives on land."
    (need-landBased ?)
    =>
    (bind ?userResponse (askForFact "Is the given animal land-based"))
@@ -34,10 +48,10 @@
 )
 
 /*
-* Asks the user whether the animal they are thinking of is warm-blooded Triggers when the system
-* needs to determine whether the animal is warm-blooded to rule out certain options.
+* Asks the user whether the animal they are thinking of is warm-blooded. Triggers when the system
+* needs to determine whether the animal is warm-blooded to narrow down the possibilities of the given animal.
 */
-(defrule askWarmBlooded "Ask if the animal the user is thinking of is warm-blooded"
+(defrule askWarmBlooded "Ask if the animal the user is thinking of is warm-blooded."
    (need-warmBlooded ?)
    =>
    (bind ?userResponse (askForFact "Is the given animal warm-blooded"))
@@ -48,12 +62,57 @@
 )
 
 /*
+* Asks the user whether the animal they are thinking of is warm-blooded. Triggers when the system
+* needs to determine how many legs the animal has to narrow down the possibilities of the given animal.
+*/
+(defrule askLegs "Determines how many legs the animal the user is thinking of has."
+   (need-legs ?)
+   =>
+   (bind ?legOptions (create$ 4 2 0))
+   (bind ?didSucceed FALSE) ; whether or not the user has answered YES or UNSURE to any of the leg questions
+
+   (foreach ?option ?legOptions
+      (if (not ?didSucceed) then
+         (bind ?userResponse (askForFact (str-cat "Does the given animal have " ?option " legs")))
+
+         (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then 
+            (assert (legs ?option)) 
+            (bind ?didSucceed TRUE)
+         elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (bind ?didSucceed FALSE)
+         elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then
+            (assert (legs unsure)) 
+            (bind (?didSucceed TRUE))
+         )
+      )
+   )
+
+   (if (not ?didSucceed) then
+      (assert (legs unsure))
+   )
+) ; askLegs (need-legs ?)
+
+/*
+* Asks the user whether the animal they are thinking of can survive on land. Triggers when the system
+* needs to determine whether the animal can survive on land to narrow down the possibilities of the given animal.
+*/
+(defrule askCanSurviveOnLand "Ask if the animal the user is thinking of can survive on land."
+   (need-canSurviveOnLand ?)
+   =>
+   (bind ?userResponse (askForFact "Can the given animal survive on land"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (canSurviveOnLand yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (canSurviveOnLand no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (canSurviveOnLand unsure))
+   )
+)
+
+/*
 * Defines the characteristics representative of a dolphin. If all these are met, 
 * will print that the animal is a dolphin.
 */
-(defrule dolphinRule "Represents a standard dolphin."
+(defrule dolphinRule "Defines the unique characteristics of a standard dolphin."
    (landBased no)
    (warmBlooded yes)
+   (canSurviveOnLand no)
    =>
    (printout t "The animal is a dolphin." crlf)
 )
@@ -62,9 +121,10 @@
 * Defines the characteristics representative of a dog. If all these are met, 
 * will print that the animal is a dog.
 */
-(defrule dogRule "Represents a standard dog."
+(defrule dogRule "Defines the unique characteristics of a standard dog."
    (landBased yes)
    (warmBlooded yes)
+   (legs 4)
    =>
    (printout t "The animal is a dog." crlf)
 )
@@ -73,11 +133,60 @@
 * Defines the characteristics representative of a tortoise. If all these are met, 
 * will print that the animal is a tortoise.
 */
-(defrule tortoiseRule "Represents a standard tortoise."
-   (landBased yes)
+(defrule tortoiseRule "Defines the unique characteristics of a standard tortoise."
+   (landBased no)
    (warmBlooded no)
+   (canSurviveOnLand yes)
    =>
    (printout t "The animal is a tortoise." crlf)
+)
+
+/*
+* Defines the characteristics representative of a shrimp. If all these are met, 
+* will print that the animal is a snake.
+*/
+(defrule shrimpRule "Defines the unique characteristics of a standard shrimp."
+   (landBased no)
+   (warmBlooded no)
+   (canSurviveOnLand no)
+   =>
+   (printout t "The animal is a shrimp." crlf)
+)
+
+/*
+* Defines the characteristics representative of a snake. If all these are met, 
+* will print that the animal is a snake.
+*/
+(defrule snakeRule "Defines the unique characteristics of a standard snake."
+   (landBased yes)
+   (warmBlooded no)
+   (legs 0)
+   =>
+   (printout t "The animal is a snake." crlf)
+)
+
+/*
+* Defines the characteristics representative of a elephant. If all these are met, 
+* will print that the animal is a elephant.
+*/
+(defrule elephantRule "Defines the unique characteristics of a standard elephant."
+   (landBased yes)
+   (warmBlooded yes)
+   (legs 4)
+   =>
+   (printout t "The animal is a elephant." crlf)
+)
+
+/*
+* Defines the characteristics representative of a elephant. If all these are met, 
+* will print that the animal is a elephant.
+*/
+(defrule seaLionRule "Defines the unique characteristics of a standard sea lion."
+   (landBased no)
+   (warmBlooded yes)
+   (canSurviveOnLand yes)
+   =>
+   (printout t "The animal is a sea lion." crlf)
 )
 
 
@@ -119,7 +228,7 @@
    (return ?userInput)
 )
 
-
+(setup)
 (reset)
 (run)
 (return)
