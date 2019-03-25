@@ -16,22 +16,27 @@
 (defglobal ?*VALID_UNCERTAIN_CHARACTER* = "?") ; will accept any string starting with this as indicating uncertainty
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
 
-(do-backward-chaining landBased) 
-(do-backward-chaining warmBlooded)
-(do-backward-chaining legs)
-(do-backward-chaining canSurviveOnLand)
-
-(deffunction setup ()
-   (printline 
-"Welcome to the Think of an Animal Game!
+/*
+* Starts up the game and presents the detailed instructions to the user.
+*/
+(defrule startup "Starts up the game and presents the instructions to the user."
+   =>
+   (printline "Welcome to the Think of an Animal Game!
 Choose one of the following animals: dolphin, dog, snake, elephant, sea lion,
 penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, parrot, water buffalo,
 bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
 I will use the information from these questions to guess which animal you are thinking of once I have 
-enough information. Good luck!"
-   )
-   (return)
+enough information. Good luck!")
 )
+
+(do-backward-chaining landBased) 
+(do-backward-chaining warmBlooded)
+(do-backward-chaining legs)
+(do-backward-chaining canSurviveOnLand)
+(do-backward-chaining isEaten)
+(do-backward-chaining mammal)
+(do-backward-chaining smallerThanAHuman)
+(do-backward-chaining endemicToAfrica)
                
 /*
 * Asks the user whether the animal they are thinking of is land-based. Triggers when the system
@@ -68,7 +73,7 @@ enough information. Good luck!"
 (defrule askLegs "Determines how many legs the animal the user is thinking of has."
    (need-legs ?)
    =>
-   (bind ?legOptions (create$ 4 2 0))
+   (bind ?legOptions (create$ 4 0 2 6))
    (bind ?didSucceed FALSE) ; whether or not the user has answered YES or UNSURE to any of the leg questions
 
    (foreach ?option ?legOptions
@@ -106,6 +111,62 @@ enough information. Good luck!"
 )
 
 /*
+* Asks the user whether the animal they are thinking of can be eaten in Western culture. Triggers when the system
+* needs to determine whether the animal can be eaten to narrow down the possibilities of the given animal.
+*/
+(defrule askIsEaten "Ask if the animal the user is thinking of can be eaten."
+   (need-isEaten ?)
+   =>
+   (bind ?userResponse (askForFact "Is the given animal commonly eaten in Western culture"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (isEaten yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (isEaten no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (isEaten unsure))
+   )
+)
+
+/*
+* Asks the user whether the animal they are thinking of is a mammal. Triggers when the system
+* needs to determine whether the animal is a mammal to narrow down the possibilities of the given animal.
+*/
+(defrule askMammal "Ask if the animal the user is thinking of is a mammal."
+   (need-mammal ?)
+   =>
+   (bind ?userResponse (askForFact "Is the given animal a mammal"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (mammal yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (mammal no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (mammal unsure))
+   )
+)
+
+/*
+* Asks the user whether the animal they are thinking of is smaller than a human when both are adults. Triggers when the system
+* needs to determine whether the animal is smaller than a human to narrow down the possibilities of the given animal.
+*/
+(defrule askSmallerThanAHuman "Ask if the animal the user is thinking of is smaller than a human, as an adult."
+   (need-smallerThanAHuman ?)
+   =>
+   (bind ?userResponse (askForFact "Is the given animal, when fully grown, smaller than an adult human"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (smallerThanAHuman yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (smallerThanAHuman no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (smallerThanAHuman unsure))
+   )
+)
+
+/*
+* Asks the user whether the animal they are thinking of is endemic to Africa. Triggers when the system
+* needs to determine whether the animal is endemic to Africa to narrow down the possibilities of the given animal.
+*/
+(defrule askEndemicToAfrica "Ask if the animal the user is thinking of is endemic to Africa."
+   (need-endemicToAfrica ?)
+   =>
+   (bind ?userResponse (askForFact "Is the given animal endemic to Africa"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (endemicToAfrica yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (endemicToAfrica no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (endemicToAfrica unsure))
+   )
+)
+
+/*
 * Defines the characteristics representative of a dolphin. If all these are met, 
 * will print that the animal is a dolphin.
 */
@@ -124,9 +185,137 @@ enough information. Good luck!"
 (defrule dogRule "Defines the unique characteristics of a standard dog."
    (landBased yes)
    (warmBlooded yes)
-   (legs 4)
+   (mammal yes)
+   (smallerThanAHuman yes)
+   (endemicToAfrica no)
+   (isEaten no)
    =>
    (printout t "The animal is a dog." crlf)
+)
+
+/*
+* Defines the characteristics representative of a camel. If all these are met, 
+* will print that the animal is a camel.
+*/
+(defrule camelRule "Defines the unique characteristics of a standard camel."
+   (landBased yes)
+   (warmBlooded yes)
+   (mammal yes)
+   (smallerThanAHuman no)
+   (endemicToAfrica yes)
+   (isEaten no)
+   =>
+   (printout t "The animal is a camel." crlf)
+)
+
+/*
+* Defines the characteristics representative of a pig. If all these are met, 
+* will print that the animal is a pig.
+*/
+(defrule pigRule "Defines the unique characteristics of a standard pig."
+   (landBased yes)
+   (warmBlooded yes)
+   (mammal yes)
+   (smallerThanAHuman yes)
+   (endemicToAfrica no)
+   (isEaten yes)
+   =>
+   (printout t "The animal is a pig." crlf)
+)
+
+/*
+* Defines the characteristics representative of a zebra. If all these are met, 
+* will print that the animal is a zebra.
+*/
+(defrule zebraRule "Defines the unique characteristics of a standard zebra."
+   (landBased yes)
+   (warmBlooded yes)
+   (mammal yes)
+   (smallerThanAHuman no)
+   (endemicToAfrica yes)
+   (isEaten no)
+   =>
+   (printout t "The animal is a zebra." crlf)
+)
+
+/*
+* Defines the characteristics representative of a bear. If all these are met, 
+* will print that the animal is a bear.
+*/
+(defrule bearRule "Defines the unique characteristics of a standard bear."
+   (landBased yes)
+   (warmBlooded yes)
+   (mammal yes)
+   (smallerThanAHuman no)
+   (endemicToAfrica no)
+   (isEaten no)
+   =>
+   (printout t "The animal is a bear." crlf)
+)
+
+/*
+* Defines the characteristics representative of a monkey. If all these are met, 
+* will print that the animal is a monkey.
+*/
+(defrule monkeyRule "Defines the unique characteristics of a standard monkey."
+   (landBased yes)
+   (warmBlooded yes)
+   (mammal yes)
+   (smallerThanAHuman no)
+   (endemicToAfrica yes)
+   (isEaten no)
+   =>
+   (printout t "The animal is a monkey." crlf)
+)
+
+/*
+* Defines the characteristics representative of a armadillo. If all these are met, 
+* will print that the animal is a armadillo.
+*/
+(defrule armadilloRule "Defines the unique characteristics of a standard armadillo."
+   (landBased yes)
+   (warmBlooded yes)
+   (mammal yes)
+   (smallerThanAHuman yes)
+   (endemicToAfrica no)
+   (isEaten no)
+   =>
+   (printout t "The animal is a armadillo." crlf)
+)
+
+/*
+* Defines the characteristics representative of a penguin. If all these are met, 
+* will print that the animal is a penguin.
+*/
+(defrule penguinRule "Defines the unique characteristics of a standard penguin."
+   (landBased yes)
+   (warmBlooded yes)
+   (endemicToAfrica no)
+   =>
+   (printout t "The animal is a penguin." crlf)
+)
+
+/*
+* Defines the characteristics representative of a parrot. If all these are met, 
+* will print that the animal is a parrot.
+*/
+(defrule parrotRule "Defines the unique characteristics of a standard parrot."
+   (landBased no)
+   (warmBlooded yes)
+   =>
+   (printout t "The animal is a parrot." crlf)
+)
+
+/*
+* Defines the characteristics representative of a water buffalo. If all these are met, 
+* will print that the animal is a water buffalo.
+*/
+(defrule waterBuffaloRule "Defines the unique characteristics of a standard water buffalo."
+   (landBased no)
+   (warmBlooded yes)
+   (canSurviveOnLand yes)
+   =>
+   (printout t "The animal is a water buffalo." crlf)
 )
 
 /*
@@ -137,13 +326,29 @@ enough information. Good luck!"
    (landBased no)
    (warmBlooded no)
    (canSurviveOnLand yes)
+   (legs 4)
    =>
    (printout t "The animal is a tortoise." crlf)
 )
 
 /*
+* Defines the characteristics representative of a elephant. If all these are met, 
+* will print that the animal is a elephant.
+*/
+(defrule elephantRule "Defines the unique characteristics of a standard elephant."
+   (landBased yes)
+   (warmBlooded yes)
+   (mammal yes)
+   (smallerThanAHuman no)
+   (endemicToAfrica yes)
+   (isEaten no)
+   =>
+   (printout t "The animal is a elephant." crlf)
+)
+
+/*
 * Defines the characteristics representative of a shrimp. If all these are met, 
-* will print that the animal is a snake.
+* will print that the animal is a shrimp.
 */
 (defrule shrimpRule "Defines the unique characteristics of a standard shrimp."
    (landBased no)
@@ -161,20 +366,46 @@ enough information. Good luck!"
    (landBased yes)
    (warmBlooded no)
    (legs 0)
+   (isEaten no)
    =>
    (printout t "The animal is a snake." crlf)
 )
 
 /*
-* Defines the characteristics representative of a elephant. If all these are met, 
-* will print that the animal is a elephant.
+* Defines the characteristics representative of a snail. If all these are met, 
+* will print that the animal is a snail.
 */
-(defrule elephantRule "Defines the unique characteristics of a standard elephant."
+(defrule snailRule "Defines the unique characteristics of a standard snail."
    (landBased yes)
-   (warmBlooded yes)
-   (legs 4)
+   (warmBlooded no)
+   (legs 0)
+   (isEaten yes)
    =>
-   (printout t "The animal is a elephant." crlf)
+   (printout t "The animal is a snail." crlf)
+)
+
+/*
+* Defines the characteristics representative of a bat. If all these are met, 
+* will print that the animal is a bat.
+*/
+(defrule batRule "Defines the unique characteristics of a standard bat."
+   (landBased no)
+   (mammal yes)
+   (legs 2)
+   =>
+   (printout t "The animal is a bat." crlf)
+)
+
+/*
+* Defines the characteristics representative of a bee. If all these are met, 
+* will print that the animal is a bee.
+*/
+(defrule beeRule "Defines the unique characteristics of a standard bee."
+   (landBased no)
+   (mammal no)
+   (legs 6)
+   =>
+   (printout t "The animal is a bee." crlf)
 )
 
 /*
@@ -228,7 +459,6 @@ enough information. Good luck!"
    (return ?userInput)
 )
 
-(setup)
 (reset)
 (run)
 (return)
