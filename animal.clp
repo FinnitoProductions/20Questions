@@ -7,6 +7,7 @@
 */
 
 (clear)
+(reset)
 
 (batch util/utilities.clp)
 
@@ -16,20 +17,7 @@
 (defglobal ?*VALID_UNCERTAIN_CHARACTER* = "?") ; will accept any string starting with this as indicating uncertainty
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
 
-/*
-* Starts up the game and presents the detailed instructions to the user.
-*/
-(defrule startup "Starts up the game and presents the instructions to the user."
-   =>
-   (printline "Welcome to the Think of an Animal Game!
-Choose one of the following animals: dolphin, dog, snake, elephant, sea lion,
-penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, parrot, water buffalo,
-bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
-I will use the information from these questions to guess which animal you are thinking of once I have 
-enough information. Good luck!")
-)
-
-(do-backward-chaining landBased) 
+(do-backward-chaining landBased)
 (do-backward-chaining warmBlooded)
 (do-backward-chaining legs)
 (do-backward-chaining canSurviveOnLand)
@@ -39,13 +27,27 @@ enough information. Good luck!")
 (do-backward-chaining endemicToAfrica)
                
 /*
+* Starts up the game and presents the detailed instructions to the user.
+*/
+(defrule startup "Starts up the game and presents the instructions to the user."
+   (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
+   =>
+   (printline "Welcome to the Think of an Animal Game!
+               Choose one of the following animals: dolphin, dog, snake, elephant, sea lion,
+               penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, parrot, water buffalo,
+               bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
+               I will use the information from these questions to guess which animal you are thinking of once I have 
+               enough information. Good luck!")
+)
+
+/*
 * Asks the user whether the animal they are thinking of is land-based. Triggers when the system
 * needs to determine whether the animal is land-based to narrow down the possibilities of the given animal.
 */
 (defrule askLandBased "Ask if the animal the user is thinking of lives on land."
    (need-landBased ?)
    =>
-   (bind ?userResponse (askForFact "Is the given animal land-based"))
+   (bind ?userResponse (askForFact "Does the given animal spend a significant amount of time on land (as opposed to the air or the water)"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (landBased yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (landBased no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (landBased unsure))
@@ -302,6 +304,7 @@ enough information. Good luck!")
 (defrule parrotRule "Defines the unique characteristics of a standard parrot."
    (landBased no)
    (warmBlooded yes)
+   (legs 2)
    =>
    (printout t "The animal is a parrot." crlf)
 )
@@ -314,6 +317,7 @@ enough information. Good luck!")
    (landBased no)
    (warmBlooded yes)
    (canSurviveOnLand yes)
+   (legs 4)
    =>
    (printout t "The animal is a water buffalo." crlf)
 )
@@ -354,6 +358,7 @@ enough information. Good luck!")
    (landBased no)
    (warmBlooded no)
    (canSurviveOnLand no)
+   (legs 0)
    =>
    (printout t "The animal is a shrimp." crlf)
 )
@@ -404,7 +409,7 @@ enough information. Good luck!")
    (landBased no)
    (mammal no)
    (legs 6)
-   =>
+   => 
    (printout t "The animal is a bee." crlf)
 )
 
@@ -419,7 +424,6 @@ enough information. Good luck!")
    =>
    (printout t "The animal is a sea lion." crlf)
 )
-
 
 /*
 * Requests the user for a response to a given question. If it is valid (starts with either "Y", "N", or "?"), 
@@ -440,6 +444,7 @@ enough information. Good luck!")
 
    (return ?returnVal)
 )
+
 /*
 * Asks the user whether a given fact is true or false (or if they are unsure). Valid input include any string starting 
 * with "Y" to indicate yes, "N" to indicate no, and "?" to indicate uncertainty.
