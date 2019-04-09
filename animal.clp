@@ -25,7 +25,9 @@
 (do-backward-chaining mammal)
 (do-backward-chaining smallerThanAHuman)
 (do-backward-chaining endemicToAfrica)
-               
+(do-backward-chaining isDark)
+(do-backward-chaining isMulticolored)
+
 /*
 * Starts up the game and presents the detailed instructions to the user.
 */
@@ -80,7 +82,7 @@
 
    (foreach ?option ?legOptions
       (if (not ?didSucceed) then
-         (bind ?userResponse (askForFact (str-cat "Does the given animal have " ?option " legs")))
+         (bind ?userResponse (askForFact (str-cat "Does the given animal have " ?option " legs (excluding flippers)")))
 
          (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then 
             (assert (legs ?option)) 
@@ -169,12 +171,41 @@
 )
 
 /*
+* Asks the user whether the animal they are thinking of is dark. Triggers when the system
+* needs to determine whether the animal is dark to narrow down the possibilities of the given animal.
+*/
+(defrule askIsDark "Ask if the animal the user is thinking of is dark."
+   (need-isDark ?)
+   =>
+   (bind ?userResponse (askForFact "Is the given animal very dark in color throughout its coat (brown or black, but not grey)"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (isDark yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (isDark no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (isDark unsure))
+   )
+)
+
+/*
+* Asks the user whether the animal they are thinking of is multicolored. Triggers when the system
+* needs to determine whether the animal is multicolored to narrow down the possibilities of the given animal.
+*/
+(defrule askIsMulticolored "Ask if the animal the user is thinking of is multicolored."
+   (need-isMulticolored ?)
+   =>
+   (bind ?userResponse (askForFact "Is the given animal multicolored"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (isMulticolored yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (isMulticolored no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (isMulticolored unsure))
+   )
+)
+
+/*
 * Defines the characteristics representative of a dolphin. If all these are met, 
 * will print that the animal is a dolphin.
 */
 (defrule dolphinRule "Defines the unique characteristics of a standard dolphin."
-   (landBased no)
+   (landBased yes)
    (warmBlooded yes)
+   (endemicToAfrica no)
    (canSurviveOnLand no)
    =>
    (printout t "The animal is a dolphin." crlf)
@@ -206,6 +237,8 @@
    (smallerThanAHuman no)
    (endemicToAfrica yes)
    (isEaten no)
+   (isDark yes)
+   (isMulticolored no)
    =>
    (printout t "The animal is a camel." crlf)
 )
@@ -236,6 +269,8 @@
    (smallerThanAHuman no)
    (endemicToAfrica yes)
    (isEaten no)
+   (isDark no)
+   (isMulticolored yes)
    =>
    (printout t "The animal is a zebra." crlf)
 )
@@ -266,6 +301,8 @@
    (smallerThanAHuman no)
    (endemicToAfrica yes)
    (isEaten no)
+   (isDark yes)
+   (isMulticolored yes)
    =>
    (printout t "The animal is a monkey." crlf)
 )
@@ -316,6 +353,8 @@
 (defrule waterBuffaloRule "Defines the unique characteristics of a standard water buffalo."
    (landBased no)
    (warmBlooded yes)
+   (mammal yes)
+   (endemicToAfrica no)
    (canSurviveOnLand yes)
    (legs 4)
    =>
@@ -346,6 +385,8 @@
    (smallerThanAHuman no)
    (endemicToAfrica yes)
    (isEaten no)
+   (isDark no)
+   (isMulticolored no)
    =>
    (printout t "The animal is a elephant." crlf)
 )
@@ -420,7 +461,9 @@
 (defrule seaLionRule "Defines the unique characteristics of a standard sea lion."
    (landBased no)
    (warmBlooded yes)
+   (mammal yes)
    (canSurviveOnLand yes)
+   (legs 0)
    =>
    (printout t "The animal is a sea lion." crlf)
 )
@@ -462,6 +505,16 @@
    (++ ?*questionNumber*)
 
    (return ?userInput)
+)
+
+/*
+* If the expert system was unable to determine the solution to the problem based on the user's answers to the questions,
+* will inform the user that there was no solution.
+*/
+(defrule noSolution "Informs the user that the solution to the problem was not found."
+   (noSolution)
+   =>
+   (printline "Sorry! I was unable to determine what animal you were thinking of.")
 )
 
 (reset)
