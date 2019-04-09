@@ -28,6 +28,8 @@
 (do-backward-chaining isDark)
 (do-backward-chaining isMulticolored)
 
+(do-backward-chaining findSolution)
+
 /*
 * Starts up the game and presents the detailed instructions to the user.
 */
@@ -209,6 +211,7 @@
    (canSurviveOnLand no)
    =>
    (printout t "The animal is a dolphin." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -224,6 +227,7 @@
    (isEaten no)
    =>
    (printout t "The animal is a dog." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -241,6 +245,7 @@
    (isMulticolored no)
    =>
    (printout t "The animal is a camel." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -256,6 +261,7 @@
    (isEaten yes)
    =>
    (printout t "The animal is a pig." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -273,6 +279,7 @@
    (isMulticolored yes)
    =>
    (printout t "The animal is a zebra." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -288,6 +295,7 @@
    (isEaten no)
    =>
    (printout t "The animal is a bear." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -305,6 +313,7 @@
    (isMulticolored yes)
    =>
    (printout t "The animal is a monkey." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -320,6 +329,7 @@
    (isEaten no)
    =>
    (printout t "The animal is a armadillo." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -332,6 +342,7 @@
    (endemicToAfrica no)
    =>
    (printout t "The animal is a penguin." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -344,6 +355,7 @@
    (legs 2)
    =>
    (printout t "The animal is a parrot." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -359,6 +371,7 @@
    (legs 4)
    =>
    (printout t "The animal is a water buffalo." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -372,6 +385,7 @@
    (legs 4)
    =>
    (printout t "The animal is a tortoise." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -389,6 +403,7 @@
    (isMulticolored no)
    =>
    (printout t "The animal is a elephant." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -402,6 +417,7 @@
    (legs 0)
    =>
    (printout t "The animal is a shrimp." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -415,6 +431,7 @@
    (isEaten no)
    =>
    (printout t "The animal is a snake." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -428,6 +445,7 @@
    (isEaten yes)
    =>
    (printout t "The animal is a snail." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -440,6 +458,7 @@
    (legs 2)
    =>
    (printout t "The animal is a bat." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -452,6 +471,7 @@
    (legs 6)
    => 
    (printout t "The animal is a bee." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -466,6 +486,7 @@
    (legs 0)
    =>
    (printout t "The animal is a sea lion." crlf)
+   (assert (solutionFound))
 )
 
 /*
@@ -512,9 +533,19 @@
 * will inform the user that there was no solution.
 */
 (defrule noSolution "Informs the user that the solution to the problem was not found."
-   (noSolution)
+   (need-findSolution)
    =>
    (printline "Sorry! I was unable to determine what animal you were thinking of.")
+)
+
+/*
+* Triggers when an animal has been guessed, stopping the system from trying to guess any more animals. 
+*/
+(defrule foundSolution "Informs the user that a solution was found."
+   (solutionFound)
+   =>
+   (clear) 
+   (reset)
 )
 
 (reset)
