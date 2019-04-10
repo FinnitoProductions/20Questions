@@ -31,7 +31,6 @@
 (do-backward-chaining canSurviveOnLand)
 (do-backward-chaining isEaten)
 (do-backward-chaining smallerThanAHuman)
-(do-backward-chaining endemicToAfrica)
 (do-backward-chaining isDark)
 (do-backward-chaining isMulticolored)
 (do-backward-chaining hasShell)
@@ -167,20 +166,6 @@
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (smallerThanAHuman yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (smallerThanAHuman no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (smallerThanAHuman unsure))
-   )
-)
-
-/*
-* Asks the user whether the animal they are thinking of is endemic to Africa. Triggers when the system
-* needs to determine whether the animal is endemic to Africa to narrow down the possibilities of the given animal.
-*/
-(defrule askEndemicToAfrica "Ask if the animal the user is thinking of is endemic to Africa."
-   (need-endemicToAfrica ?)
-   =>
-   (bind ?userResponse (askForFact "Is the given animal endemic to Africa"))
-   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (endemicToAfrica yes))
-    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (endemicToAfrica no))
-    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (endemicToAfrica unsure))
    )
 )
 
@@ -594,8 +579,8 @@
 (defrule foundSolution "Shuts off the system after the solution has been guessed."
    (solutionFound)
    =>
-   ; (clear) 
-   ; (reset)
+   (clear) 
+   (reset)
    (bind ?*FOUND_SOLUTION* TRUE)
 )
 
