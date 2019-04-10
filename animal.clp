@@ -39,10 +39,15 @@
    =>
    (printline "Welcome to the Think of an Animal Game!
                Choose one of the following animals: dolphin, dog, snake, elephant, sea lion,
-               penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, parrot, water buffalo,
-               bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
+                  penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, parrot, water buffalo,
+                  bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
+
+               Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
+                  \"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
+                  and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
+                  
                I will use the information from these questions to guess which animal you are thinking of once I have 
-               enough information. Good luck!")
+                  enough information. Good luck!")
 )
 
 /*
