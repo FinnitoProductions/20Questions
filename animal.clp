@@ -18,7 +18,8 @@
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
 (defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
 
-(do-backward-chaining landBased)
+(do-backward-chaining canFly)
+(do-backward-chaining swimsOften)
 (do-backward-chaining warmBlooded)
 (do-backward-chaining legs)
 (do-backward-chaining canSurviveOnLand)
@@ -45,18 +46,30 @@
 )
 
 /*
-* Asks the user whether the animal they are thinking of is land-based. Triggers when the system
-* needs to determine whether the animal is land-based to narrow down the possibilities of the given animal.
+* Asks the user whether the animal they are thinking of can fly. Triggers when the system
+* needs to determine whether the animal can fly to narrow down the possibilities of the given animal.
 */
-(defrule askLandBased "Ask if the animal the user is thinking of lives on land."
-   (need-landBased ?)
+(defrule askCanFly "Ask if the animal the user is thinking of can fly."
+   (need-canFly ?)
    =>
-   (bind ?canFly (askForFact "Can the given animal fly"))
-   (bind ?frequentSwimmer (askForFact "Is the given animal frequently found in water"))
+   (bind ?userResponse (askForFact "Can the given animal fly"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (canFly yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (canFly no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (canFly unsure))
+   )
+)
 
-   (if (not (or (eq ?canFly ?*VALID_YES_CHARACTER*) (eq ?frequentSwimmer ?*VALID_YES_CHARACTER*))) then (assert (landBased yes))
-    elif (or (eq ?canFly ?*VALID_UNCERTAIN_CHARACTER*) (eq ?frequentSwimmer ?*VALID_UNCERTAIN_CHARACTER*)) then (assert (landBased unsure))
-    else (assert (landBased no))
+/*
+* Asks the user whether the animal they are thinking of swims often. Triggers when the system
+* needs to determine whether the animal can fly to narrow down the possibilities of the given animal.
+*/
+(defrule askSwimsOften "Ask if the animal the user is thinking of swims often."
+   (need-swimsOften ?)
+   =>
+   (bind ?userResponse (askForFact "Does the given animal swim often"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (swimsOften yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (swimsOften no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (swimsOften unsure))
    )
 )
 
@@ -221,7 +234,8 @@
 * will print that the animal is a dolphin.
 */
 (defrule dolphinRule "Defines the unique characteristics of a standard dolphin."
-   (landBased no)
+   (canFly no)
+   (swimsOften yes)
    (warmBlooded yes)
    (legs 0)
    (canSurviveOnLand no)
@@ -236,8 +250,8 @@
 * will print that the animal is a dog.
 */
 (defrule dogRule "Defines the unique characteristics of a standard dog."
-   (landBased yes)
-   (warmBlooded yes)
+   (canFly no)
+   (swimsOften no)
    (legs 4)
    (smallerThanAHuman yes)
    (isEaten no)
@@ -252,8 +266,8 @@
 * will print that the animal is a camel.
 */
 (defrule camelRule "Defines the unique characteristics of a standard camel."
-   (landBased yes)
-   (warmBlooded yes)
+   (canFly no)
+   (swimsOften no)
    (legs 4)
    (smallerThanAHuman no)
    (isEaten no)
@@ -269,8 +283,8 @@
 * will print that the animal is a pig.
 */
 (defrule pigRule "Defines the unique characteristics of a standard pig."
-   (landBased yes)
-   (warmBlooded yes)
+   (canFly no)
+   (swimsOften no)
    (legs 4)
    (smallerThanAHuman yes)
    (isEaten yes)
@@ -285,8 +299,8 @@
 * will print that the animal is a zebra.
 */
 (defrule zebraRule "Defines the unique characteristics of a standard zebra."
-   (landBased yes)
-   (warmBlooded yes)
+   (canFly no)
+   (swimsOften no)
    (legs 4)
    (smallerThanAHuman no)
    (isEaten no)
@@ -302,7 +316,8 @@
 * will print that the animal is a bear.
 */
 (defrule bearRule "Defines the unique characteristics of a standard bear."
-   (landBased yes)
+   (canFly no)
+   (swimsOften no)
    (warmBlooded yes)
    (smallerThanAHuman no)
    (legs 4)
@@ -319,7 +334,8 @@
 * will print that the animal is a monkey.
 */
 (defrule monkeyRule "Defines the unique characteristics of a standard monkey."
-   (landBased yes)
+   (canFly no)
+   (swimsOften no)
    (warmBlooded yes)
    (smallerThanAHuman no)
    (isEaten no)
@@ -337,7 +353,8 @@
 * will print that the animal is a armadillo.
 */
 (defrule armadilloRule "Defines the unique characteristics of a standard armadillo."
-   (landBased yes)
+   (canFly no)
+   (swimsOften no)
    (warmBlooded yes)
    (legs 4)
    (smallerThanAHuman yes)
@@ -353,7 +370,8 @@
 * will print that the animal is a penguin.
 */
 (defrule penguinRule "Defines the unique characteristics of a standard penguin."
-   (landBased ?x) ; will accept any value for land-based because penguins could be seen as either
+   (canFly no)
+   (swimsOften ?x) ; will accept any value for swims often because penguins could be seen as land-based or non-land-based
    (warmBlooded yes)
    (legs 2)
    (hotEnvironment no)
@@ -368,7 +386,8 @@
 * will print that the animal is a parrot.
 */
 (defrule parrotRule "Defines the unique characteristics of a standard parrot."
-   (landBased no)
+   (canFly yes)
+   (swimsOften no)
    (warmBlooded yes)
    (legs 2)
    (hotEnvironment yes)
@@ -383,7 +402,8 @@
 * will print that the animal is a water buffalo.
 */
 (defrule waterBuffaloRule "Defines the unique characteristics of a standard water buffalo."
-   (landBased no)
+   (canFly no)
+   (swimsOften yes)
    (warmBlooded yes)
    (legs 4)
    (canSurviveOnLand yes)
@@ -397,7 +417,8 @@
 * will print that the animal is a tortoise.
 */
 (defrule tortoiseRule "Defines the unique characteristics of a standard tortoise."
-   (landBased no)
+   (canFly no)
+   (swimsOften yes)
    (warmBlooded no)
    (legs 4)
    (canSurviveOnLand yes)
@@ -412,7 +433,8 @@
 * will print that the animal is a elephant.
 */
 (defrule elephantRule "Defines the unique characteristics of a standard elephant."
-   (landBased yes)
+   (canFly no)
+   (swimsOften no)
    (warmBlooded yes)
    (legs 4)
    (smallerThanAHuman no)
@@ -430,8 +452,10 @@
 * will print that the animal is a shrimp.
 */
 (defrule shrimpRule "Defines the unique characteristics of a standard shrimp."
-   (landBased no)
+   (canFly no)
+   (swimsOften yes)
    (warmBlooded no)
+   (legs ?x &~4 &~6) ; accounts for potential uncertainty in the number of legs of a shrimp (allowing unsure or any number that is not 4 or 6)
    (canSurviveOnLand no)
    (hasShell yes)
    =>
@@ -444,7 +468,8 @@
 * will print that the animal is a snake.
 */
 (defrule snakeRule "Defines the unique characteristics of a standard snake."
-   (landBased yes)
+   (canFly no)
+   (swimsOften no)
    (warmBlooded no)
    (legs 0)
    (isEaten no)
@@ -458,7 +483,8 @@
 * will print that the animal is a snail.
 */
 (defrule snailRule "Defines the unique characteristics of a standard snail."
-   (landBased yes)
+   (canFly no)
+   (swimsOften no)
    (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the snail's bloodedness (unsure or no are both acceptable)
    (legs 0)
    (isEaten yes)
@@ -473,7 +499,8 @@
 * will print that the animal is a bat.
 */
 (defrule batRule "Defines the unique characteristics of a standard bat."
-   (landBased no)
+   (canFly yes)
+   (swimsOften no)
    (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the bat's bloodedness (unsure or no are both acceptable)
    (legs 2)
    =>
@@ -486,7 +513,8 @@
 * will print that the animal is a bee.
 */
 (defrule beeRule "Defines the unique characteristics of a standard bee."
-   (landBased no)
+   (canFly yes)
+   (swimsOften no)
    (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the bee's bloodedness (unsure or no are both acceptable)
    (legs 6)
    (isMulticolored yes)
@@ -500,7 +528,8 @@
 * will print that the animal is a elephant.
 */
 (defrule seaLionRule "Defines the unique characteristics of a standard sea lion."
-   (landBased no)
+   (canFly no)
+   (swimsOften yes)
    (warmBlooded yes)
    (legs 0)
    (canSurviveOnLand yes)
@@ -554,8 +583,8 @@
 (defrule foundSolution "Shuts off the system after the solution has been guessed."
    (solutionFound)
    =>
-   (clear) 
-   (reset)
+   ; (clear) 
+   ; (reset)
    (bind ?*FOUND_SOLUTION* TRUE)
 )
 
