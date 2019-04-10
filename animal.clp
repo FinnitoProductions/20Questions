@@ -22,11 +22,11 @@
 (do-backward-chaining legs)
 (do-backward-chaining canSurviveOnLand)
 (do-backward-chaining isEaten)
-(do-backward-chaining mammal)
 (do-backward-chaining smallerThanAHuman)
 (do-backward-chaining endemicToAfrica)
 (do-backward-chaining isDark)
 (do-backward-chaining isMulticolored)
+(do-backward-chaining hasShell)
 
 (do-backward-chaining findSolution)
 
@@ -51,7 +51,7 @@
 (defrule askLandBased "Ask if the animal the user is thinking of lives on land."
    (need-landBased ?)
    =>
-   (bind ?userResponse (askForFact "Does the given animal spend a significant amount of time on land (as opposed to the air or the water)"))
+   (bind ?userResponse (askForFact "Is the animal exclusively land-based (cannot fly and would rarely be found in water)"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (landBased yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (landBased no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (landBased unsure))
@@ -131,20 +131,6 @@
 )
 
 /*
-* Asks the user whether the animal they are thinking of is a mammal. Triggers when the system
-* needs to determine whether the animal is a mammal to narrow down the possibilities of the given animal.
-*/
-(defrule askMammal "Ask if the animal the user is thinking of is a mammal."
-   (need-mammal ?)
-   =>
-   (bind ?userResponse (askForFact "Is the given animal a mammal"))
-   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (mammal yes))
-    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (mammal no))
-    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (mammal unsure))
-   )
-)
-
-/*
 * Asks the user whether the animal they are thinking of is smaller than a human when both are adults. Triggers when the system
 * needs to determine whether the animal is smaller than a human to narrow down the possibilities of the given animal.
 */
@@ -201,14 +187,30 @@
 )
 
 /*
+* Asks the user whether the animal they are thinking of has a shell. Triggers when the system
+* needs to determine whether the animal has a shell to narrow down the possibilities of the given animal.
+*/
+(defrule askHasShell "Ask if the animal the user is thinking of has a shell"
+   (need-hasShell ?)
+   =>
+   (bind ?userResponse (askForFact "Does the given animal have a shell"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (hasShell yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (hasShell no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (hasShell unsure))
+   )
+)
+
+/*
 * Defines the characteristics representative of a dolphin. If all these are met, 
 * will print that the animal is a dolphin.
 */
 (defrule dolphinRule "Defines the unique characteristics of a standard dolphin."
-   (landBased yes)
+   (landBased no)
    (warmBlooded yes)
    (endemicToAfrica no)
    (canSurviveOnLand no)
+   (legs 0)
+   (hasShell no)
    =>
    (printout t "The animal is a dolphin." crlf)
    (assert (solutionFound))
@@ -221,10 +223,11 @@
 (defrule dogRule "Defines the unique characteristics of a standard dog."
    (landBased yes)
    (warmBlooded yes)
-   (mammal yes)
+   (legs 4)
    (smallerThanAHuman yes)
    (endemicToAfrica no)
    (isEaten no)
+   (hasShell no)
    =>
    (printout t "The animal is a dog." crlf)
    (assert (solutionFound))
@@ -237,7 +240,7 @@
 (defrule camelRule "Defines the unique characteristics of a standard camel."
    (landBased yes)
    (warmBlooded yes)
-   (mammal yes)
+   (legs 4)
    (smallerThanAHuman no)
    (endemicToAfrica yes)
    (isEaten no)
@@ -255,10 +258,11 @@
 (defrule pigRule "Defines the unique characteristics of a standard pig."
    (landBased yes)
    (warmBlooded yes)
-   (mammal yes)
+   (legs 4)
    (smallerThanAHuman yes)
    (endemicToAfrica no)
    (isEaten yes)
+   (isMulticolored yes)
    =>
    (printout t "The animal is a pig." crlf)
    (assert (solutionFound))
@@ -271,7 +275,7 @@
 (defrule zebraRule "Defines the unique characteristics of a standard zebra."
    (landBased yes)
    (warmBlooded yes)
-   (mammal yes)
+   (legs 4)
    (smallerThanAHuman no)
    (endemicToAfrica yes)
    (isEaten no)
@@ -289,9 +293,9 @@
 (defrule bearRule "Defines the unique characteristics of a standard bear."
    (landBased yes)
    (warmBlooded yes)
-   (mammal yes)
    (smallerThanAHuman no)
    (endemicToAfrica no)
+   (legs 4)
    (isEaten no)
    =>
    (printout t "The animal is a bear." crlf)
@@ -305,11 +309,11 @@
 (defrule monkeyRule "Defines the unique characteristics of a standard monkey."
    (landBased yes)
    (warmBlooded yes)
-   (mammal yes)
    (smallerThanAHuman no)
    (endemicToAfrica yes)
    (isEaten no)
    (isDark yes)
+   (legs 2)
    (isMulticolored yes)
    =>
    (printout t "The animal is a monkey." crlf)
@@ -323,10 +327,11 @@
 (defrule armadilloRule "Defines the unique characteristics of a standard armadillo."
    (landBased yes)
    (warmBlooded yes)
-   (mammal yes)
+   (legs 4)
    (smallerThanAHuman yes)
    (endemicToAfrica no)
    (isEaten no)
+   (hasShell yes)
    =>
    (printout t "The animal is a armadillo." crlf)
    (assert (solutionFound))
@@ -340,6 +345,9 @@
    (landBased yes)
    (warmBlooded yes)
    (endemicToAfrica no)
+   (hasShell no)
+   (legs 2)
+   (isMulticolored yes)
    =>
    (printout t "The animal is a penguin." crlf)
    (assert (solutionFound))
@@ -365,10 +373,9 @@
 (defrule waterBuffaloRule "Defines the unique characteristics of a standard water buffalo."
    (landBased no)
    (warmBlooded yes)
-   (mammal yes)
+   (legs 4)
    (endemicToAfrica no)
    (canSurviveOnLand yes)
-   (legs 4)
    =>
    (printout t "The animal is a water buffalo." crlf)
    (assert (solutionFound))
@@ -381,8 +388,9 @@
 (defrule tortoiseRule "Defines the unique characteristics of a standard tortoise."
    (landBased no)
    (warmBlooded no)
-   (canSurviveOnLand yes)
    (legs 4)
+   (canSurviveOnLand yes)
+   (hasShell yes)
    =>
    (printout t "The animal is a tortoise." crlf)
    (assert (solutionFound))
@@ -395,7 +403,7 @@
 (defrule elephantRule "Defines the unique characteristics of a standard elephant."
    (landBased yes)
    (warmBlooded yes)
-   (mammal yes)
+   (legs 4)
    (smallerThanAHuman no)
    (endemicToAfrica yes)
    (isEaten no)
@@ -415,6 +423,7 @@
    (warmBlooded no)
    (canSurviveOnLand no)
    (legs 0)
+   (hasShell yes)
    =>
    (printout t "The animal is a shrimp." crlf)
    (assert (solutionFound))
@@ -440,9 +449,10 @@
 */
 (defrule snailRule "Defines the unique characteristics of a standard snail."
    (landBased yes)
-   (warmBlooded no)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the snail's bloodedness (unsure or no are both acceptable)
    (legs 0)
    (isEaten yes)
+   (hasShell yes)
    =>
    (printout t "The animal is a snail." crlf)
    (assert (solutionFound))
@@ -454,7 +464,7 @@
 */
 (defrule batRule "Defines the unique characteristics of a standard bat."
    (landBased no)
-   (mammal yes)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the bat's bloodedness (unsure or no are both acceptable)
    (legs 2)
    =>
    (printout t "The animal is a bat." crlf)
@@ -467,7 +477,6 @@
 */
 (defrule beeRule "Defines the unique characteristics of a standard bee."
    (landBased no)
-   (mammal no)
    (legs 6)
    => 
    (printout t "The animal is a bee." crlf)
@@ -481,7 +490,6 @@
 (defrule seaLionRule "Defines the unique characteristics of a standard sea lion."
    (landBased no)
    (warmBlooded yes)
-   (mammal yes)
    (canSurviveOnLand yes)
    (legs 0)
    =>
@@ -541,7 +549,7 @@
 /*
 * Triggers when an animal has been guessed, stopping the system from trying to guess any more animals. 
 */
-(defrule foundSolution "Informs the user that a solution was found."
+(defrule foundSolution "Shuts off the system after the solution has been guessed."
    (solutionFound)
    =>
    (clear) 
