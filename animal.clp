@@ -3,7 +3,8 @@
 * March 16, 2019
 *
 * Plays "20 Questions" with the user where the user thinks of an animal (out of a given list of options) and
-* the program will guess the animal by asking a series of yes/no questions (no more than 20).
+* the program will guess the animal by asking a series of yes/no questions (no more than 20) and apply the
+* rule engine to determine which animal they are thinking of.
 */
 
 (clear)
@@ -18,6 +19,11 @@
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
 (defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
 
+/*
+* Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
+* to evaluate a rule, a separate backward-chained rule will be fired to ask the user whether or not the given
+* trait is valid.
+*/
 (do-backward-chaining canFly)
 (do-backward-chaining swimsOften)
 (do-backward-chaining warmBlooded)
