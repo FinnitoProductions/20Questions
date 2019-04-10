@@ -16,6 +16,7 @@
 (defglobal ?*VALID_NO_CHARACTER* = "n") ; will accept any string starting with this as indicating "no"
 (defglobal ?*VALID_UNCERTAIN_CHARACTER* = "?") ; will accept any string starting with this as indicating uncertainty
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
+(defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
 
 (do-backward-chaining landBased)
 (do-backward-chaining warmBlooded)
@@ -28,8 +29,6 @@
 (do-backward-chaining isMulticolored)
 (do-backward-chaining hasShell)
 (do-backward-chaining hotEnvironment)
-
-(do-backward-chaining findSolution)
 
 /*
 * Starts up the game and presents the detailed instructions to the user.
@@ -550,16 +549,6 @@
 )
 
 /*
-* If the expert system was unable to determine the solution to the problem based on the user's answers to the questions,
-* will inform the user that there was no solution.
-*/
-(defrule noSolution "Informs the user that the solution to the problem was not found."
-   (need-findSolution)
-   =>
-   (printline "Sorry! I was unable to determine what animal you were thinking of.")
-)
-
-/*
 * Triggers when an animal has been guessed, stopping the system from trying to guess any more animals. 
 */
 (defrule foundSolution "Shuts off the system after the solution has been guessed."
@@ -567,8 +556,10 @@
    =>
    (clear) 
    (reset)
+   (bind ?*FOUND_SOLUTION* TRUE)
 )
 
 (reset)
 (run)
+(if (not ?*FOUND_SOLUTION*) then (printout t "Sorry! I was unable to determine what animal you were thinking of." crlf))
 (return)
