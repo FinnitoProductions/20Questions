@@ -27,6 +27,7 @@
 (do-backward-chaining isDark)
 (do-backward-chaining isMulticolored)
 (do-backward-chaining hasShell)
+(do-backward-chaining hotEnvironment)
 
 (do-backward-chaining findSolution)
 
@@ -51,10 +52,12 @@
 (defrule askLandBased "Ask if the animal the user is thinking of lives on land."
    (need-landBased ?)
    =>
-   (bind ?userResponse (askForFact "Is the animal exclusively land-based (cannot fly and would rarely be found in water)"))
-   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (landBased yes))
-    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (landBased no))
-    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (landBased unsure))
+   (bind ?canFly (askForFact "Can the given animal fly"))
+   (bind ?frequentSwimmer (askForFact "Is the given animal frequently found in water"))
+
+   (if (not (or (eq ?canFly ?*VALID_YES_CHARACTER*) (eq ?frequentSwimmer ?*VALID_YES_CHARACTER*))) then (assert (landBased yes))
+    elif (or (eq ?canFly ?*VALID_UNCERTAIN_CHARACTER*) (eq ?frequentSwimmer ?*VALID_UNCERTAIN_CHARACTER*)) then (assert (landBased unsure))
+    else (assert (landBased no))
    )
 )
 
@@ -73,7 +76,7 @@
 )
 
 /*
-* Asks the user whether the animal they are thinking of is warm-blooded. Triggers when the system
+* Determines how many legs the given animal has by asking whether it has 4, 0, 2, or 6 legs. Triggers when the system
 * needs to determine how many legs the animal has to narrow down the possibilities of the given animal.
 */
 (defrule askLegs "Determines how many legs the animal the user is thinking of has."
@@ -165,7 +168,7 @@
 (defrule askIsDark "Ask if the animal the user is thinking of is dark."
    (need-isDark ?)
    =>
-   (bind ?userResponse (askForFact "Is the given animal very dark in color throughout its coat (brown or black, but not grey)"))
+   (bind ?userResponse (askForFact "Is the given animal either brown or black"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (isDark yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (isDark no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (isDark unsure))
@@ -201,15 +204,28 @@
 )
 
 /*
+* Asks the user whether the animal they are thinking of lives in a hot environment. Triggers when the system
+* needs to determine whether the animal can survive in hot environments to narrow down the possibilities of the given animal.
+*/
+(defrule askHotEnvironment "Ask if the animal the user is thinking of lives in a hot environment"
+   (need-hotEnvironment ?)
+   =>
+   (bind ?userResponse (askForFact "Does the given animal live exclusively in warm environments"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (hotEnvironment yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (hotEnvironment no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (hotEnvironment unsure))
+   )
+)
+
+/*
 * Defines the characteristics representative of a dolphin. If all these are met, 
 * will print that the animal is a dolphin.
 */
 (defrule dolphinRule "Defines the unique characteristics of a standard dolphin."
    (landBased no)
    (warmBlooded yes)
-   (endemicToAfrica no)
-   (canSurviveOnLand no)
    (legs 0)
+   (canSurviveOnLand no)
    (hasShell no)
    =>
    (printout t "The animal is a dolphin." crlf)
@@ -225,7 +241,6 @@
    (warmBlooded yes)
    (legs 4)
    (smallerThanAHuman yes)
-   (endemicToAfrica no)
    (isEaten no)
    (hasShell no)
    =>
@@ -242,7 +257,6 @@
    (warmBlooded yes)
    (legs 4)
    (smallerThanAHuman no)
-   (endemicToAfrica yes)
    (isEaten no)
    (isDark yes)
    (isMulticolored no)
@@ -260,7 +274,6 @@
    (warmBlooded yes)
    (legs 4)
    (smallerThanAHuman yes)
-   (endemicToAfrica no)
    (isEaten yes)
    (isMulticolored yes)
    =>
@@ -277,7 +290,6 @@
    (warmBlooded yes)
    (legs 4)
    (smallerThanAHuman no)
-   (endemicToAfrica yes)
    (isEaten no)
    (isDark no)
    (isMulticolored yes)
@@ -294,8 +306,9 @@
    (landBased yes)
    (warmBlooded yes)
    (smallerThanAHuman no)
-   (endemicToAfrica no)
    (legs 4)
+   (isDark ?x &~no) ; accounts for potential uncertainty in the bear's fur color (unsure or yes are both acceptable)
+   (hotEnvironment no)
    (isEaten no)
    =>
    (printout t "The animal is a bear." crlf)
@@ -310,11 +323,11 @@
    (landBased yes)
    (warmBlooded yes)
    (smallerThanAHuman no)
-   (endemicToAfrica yes)
    (isEaten no)
    (isDark yes)
    (legs 2)
-   (isMulticolored yes)
+   (hotEnvironment yes)
+   (isMulticolored ?x &~no) ; accounts for potential uncertainty in monkey's multicoloredness (will accept unsure or yes)
    =>
    (printout t "The animal is a monkey." crlf)
    (assert (solutionFound))
@@ -329,7 +342,6 @@
    (warmBlooded yes)
    (legs 4)
    (smallerThanAHuman yes)
-   (endemicToAfrica no)
    (isEaten no)
    (hasShell yes)
    =>
@@ -342,11 +354,10 @@
 * will print that the animal is a penguin.
 */
 (defrule penguinRule "Defines the unique characteristics of a standard penguin."
-   (landBased yes)
+   (landBased ?x) ; will accept any value for land-based because penguins could be seen as either
    (warmBlooded yes)
-   (endemicToAfrica no)
-   (hasShell no)
    (legs 2)
+   (hotEnvironment no)
    (isMulticolored yes)
    =>
    (printout t "The animal is a penguin." crlf)
@@ -361,6 +372,8 @@
    (landBased no)
    (warmBlooded yes)
    (legs 2)
+   (hotEnvironment yes)
+   (isMulticolored yes)
    =>
    (printout t "The animal is a parrot." crlf)
    (assert (solutionFound))
@@ -374,7 +387,6 @@
    (landBased no)
    (warmBlooded yes)
    (legs 4)
-   (endemicToAfrica no)
    (canSurviveOnLand yes)
    =>
    (printout t "The animal is a water buffalo." crlf)
@@ -405,9 +417,9 @@
    (warmBlooded yes)
    (legs 4)
    (smallerThanAHuman no)
-   (endemicToAfrica yes)
    (isEaten no)
    (isDark no)
+   (hotEnvironments yes)
    (isMulticolored no)
    =>
    (printout t "The animal is a elephant." crlf)
@@ -422,7 +434,6 @@
    (landBased no)
    (warmBlooded no)
    (canSurviveOnLand no)
-   (legs 0)
    (hasShell yes)
    =>
    (printout t "The animal is a shrimp." crlf)
@@ -477,7 +488,9 @@
 */
 (defrule beeRule "Defines the unique characteristics of a standard bee."
    (landBased no)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the bee's bloodedness (unsure or no are both acceptable)
    (legs 6)
+   (isMulticolored yes)
    => 
    (printout t "The animal is a bee." crlf)
    (assert (solutionFound))
@@ -490,8 +503,8 @@
 (defrule seaLionRule "Defines the unique characteristics of a standard sea lion."
    (landBased no)
    (warmBlooded yes)
-   (canSurviveOnLand yes)
    (legs 0)
+   (canSurviveOnLand yes)
    =>
    (printout t "The animal is a sea lion." crlf)
    (assert (solutionFound))
