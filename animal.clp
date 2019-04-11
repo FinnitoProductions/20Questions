@@ -44,7 +44,7 @@
    =>
    (printline "Welcome to the Think of an Animal Game!
                Choose one of the following animals: dolphin, dog, snake, elephant, sea lion,
-                  penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, parrot, water buffalo,
+                  penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, crab, parrot, water buffalo,
                   bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
 
                Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
@@ -76,7 +76,7 @@
 (defrule askSwimsOften "Ask if the animal the user is thinking of swims often."
    (need-swimsOften ?)
    =>
-   (bind ?userResponse (askForFact "Does the given animal swim often"))
+   (bind ?userResponse (askForFact "Can the given animal often be found immersed in water"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (swimsOften yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (swimsOften no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (swimsOften unsure))
@@ -300,7 +300,6 @@
    (legs 4)
    (smallerThanAHuman no)
    (isEaten no)
-   (isDark no)
    (isMulticolored yes)
    =>
    (printout t "The animal is a zebra." crlf)
@@ -520,8 +519,8 @@
 )
 
 /*
-* Defines the characteristics representative of a elephant. If all these are met, 
-* will print that the animal is a elephant.
+* Defines the characteristics representative of a sea lion. If all these are met, 
+* will print that the animal is a sea lion.
 */
 (defrule seaLionRule "Defines the unique characteristics of a standard sea lion."
    (canFly no)
@@ -531,6 +530,22 @@
    (canSurviveOnLand yes)
    =>
    (printout t "The animal is a sea lion." crlf)
+   (assert (solutionFound))
+)
+
+/*
+* Defines the characteristics representative of a crab. If all these are met, 
+* will print that the animal is a crab.
+*/
+(defrule crabRule "Defines the unique characteristics of a standard crab."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded no)
+   (legs ?x &~4 &~6) ; accounts for potential uncertainty in the number of legs of a crab (allowing unsure or any number that is not 4 or 6)
+   (canSurviveOnLand yes)
+   (hasShell yes)
+   =>
+   (printout t "The animal is a crab." crlf)
    (assert (solutionFound))
 )
 
