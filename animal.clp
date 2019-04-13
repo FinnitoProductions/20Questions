@@ -239,8 +239,7 @@
    (canSurviveOnLand no)
    (hasShell no)
    =>
-   (printout t "The animal is a dolphin." crlf)
-   (assert (solutionFound))
+   (printSolution "dolphin")
 )
 
 /*
@@ -255,8 +254,7 @@
    (isEaten no)
    (hasShell no)
    =>
-   (printout t "The animal is a dog." crlf)
-   (assert (solutionFound))
+   (printSolution "dog")
 )
 
 /*
@@ -272,8 +270,7 @@
    (isDark yes)
    (isMulticolored no)
    =>
-   (printout t "The animal is a camel." crlf)
-   (assert (solutionFound))
+   (printSolution "camel")
 )
 
 /*
@@ -288,8 +285,7 @@
    (isEaten yes)
    (isMulticolored yes)
    =>
-   (printout t "The animal is a pig." crlf)
-   (assert (solutionFound))
+   (printSolution "snail")
 )
 
 /*
@@ -304,26 +300,41 @@
    (isEaten no)
    (isMulticolored yes)
    =>
-   (printout t "The animal is a zebra." crlf)
-   (assert (solutionFound))
+   (printSolution "zebra")
 )
 
 /*
-* Defines the characteristics representative of a bear. If all these are met, 
-* will print that the animal is a bear.
+* Defines the characteristics representative of a black bear. If all these are met, 
+* will print that the animal is a black bear.
 */
-(defrule bearRule "Defines the unique characteristics of a standard bear."
+(defrule blackBearRule "Defines the unique characteristics of a standard black bear."
    (canFly no)
    (swimsOften no)
    (warmBlooded yes)
    (smallerThanAHuman no)
    (legs 4)
-   (isDark ?x &~no) ; accounts for potential uncertainty in the bear's fur color (unsure or yes are both acceptable)
+   (isDark yes)
    (hotEnvironment no)
    (isEaten no)
    =>
-   (printout t "The animal is a bear." crlf)
-   (assert (solutionFound))
+   (printSolution "black bear")
+)
+
+/*
+* Defines the characteristics representative of a polar bear. If all these are met, 
+* will print that the animal is a polar bear.
+*/
+(defrule polarBearRule "Defines the unique characteristics of a standard polar bear."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded yes)
+   (smallerThanAHuman no)
+   (legs 4)
+   (isDark no)
+   (hotEnvironment no)
+   (isEaten no)
+   =>
+   (printSolution "polar bear")
 )
 
 /*
@@ -341,8 +352,7 @@
    (hotEnvironment yes)
    (isMulticolored ?x &~no) ; accounts for potential uncertainty in monkey's multicoloredness (will accept unsure or yes)
    =>
-   (printout t "The animal is a monkey." crlf)
-   (assert (solutionFound))
+   (printSolution "monkey")
 )
 
 /*
@@ -358,8 +368,7 @@
    (isEaten no)
    (hasShell yes)
    =>
-   (printout t "The animal is a armadillo." crlf)
-   (assert (solutionFound))
+   (printSolution "armadillo")
 )
 
 /*
@@ -374,8 +383,7 @@
    (hotEnvironment no)
    (isMulticolored yes)
    =>
-   (printout t "The animal is a penguin." crlf)
-   (assert (solutionFound))
+   (printSolution "penguin")
 )
 
 /*
@@ -390,8 +398,7 @@
    (hotEnvironment yes)
    (isMulticolored yes)
    =>
-   (printout t "The animal is a parrot." crlf)
-   (assert (solutionFound))
+   (printSolution "parrot")
 )
 
 /*
@@ -405,8 +412,7 @@
    (legs 4)
    (canSurviveOnLand yes)
    =>
-   (printout t "The animal is a water buffalo." crlf)
-   (assert (solutionFound))
+   (printSolution "water buffalo")
 )
 
 /*
@@ -421,8 +427,7 @@
    (canSurviveOnLand yes)
    (hasShell yes)
    =>
-   (printout t "The animal is a tortoise." crlf)
-   (assert (solutionFound))
+   (printSolution "tortoise")
 )
 
 /*
@@ -440,8 +445,7 @@
    (hotEnvironments yes)
    (isMulticolored no)
    =>
-   (printout t "The animal is a elephant." crlf)
-   (assert (solutionFound))
+   (printSolution "elephant")
 )
 
 /*
@@ -456,8 +460,7 @@
    (canSurviveOnLand no)
    (hasShell yes)
    =>
-   (printout t "The animal is a shrimp." crlf)
-   (assert (solutionFound))
+   (printSolution "shrimp")
 )
 
 /*
@@ -471,8 +474,7 @@
    (legs 0)
    (isEaten no)
    =>
-   (printout t "The animal is a snake." crlf)
-   (assert (solutionFound))
+   (printSolution "snake")
 )
 
 /*
@@ -486,8 +488,7 @@
    (legs 4)
    (isEaten no)
    =>
-   (printout t "The animal is a lizard." crlf)
-   (assert (solutionFound))
+   (printSolution "lizard")
 )
 
 /*
@@ -502,8 +503,7 @@
    (isEaten yes)
    (hasShell yes)
    =>
-   (printout t "The animal is a snail." crlf)
-   (assert (solutionFound))
+   (printSolution "snail")
 )
 
 /*
@@ -516,8 +516,7 @@
    (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the bat's bloodedness (unsure or no are both acceptable)
    (legs 2)
    =>
-   (printout t "The animal is a bat." crlf)
-   (assert (solutionFound))
+   (printSolution "bat")
 )
 
 /*
@@ -531,8 +530,7 @@
    (legs 6)
    (isMulticolored yes)
    => 
-   (printout t "The animal is a bee." crlf)
-   (assert (solutionFound))
+   (printSolution "bee")
 )
 
 /*
@@ -546,8 +544,7 @@
    (legs 0)
    (canSurviveOnLand yes)
    =>
-   (printout t "The animal is a sea lion." crlf)
-   (assert (solutionFound))
+   (printSolution "sea lion")
 )
 
 /*
@@ -562,8 +559,7 @@
    (canSurviveOnLand yes)
    (hasShell yes)
    =>
-   (printout t "The animal is a crab." crlf)
-   (assert (solutionFound))
+   (printSolution "crab")
 )
 
 
@@ -617,6 +613,13 @@
    (bind ?*FOUND_SOLUTION* TRUE)
 )
 
+/* 
+* Prints out the solution to the problem and asserts that the solution has been found.
+*/ 
+(deffunction printSolution (?solution)
+   (printout t "The animal is a " ?solution "." crlf)
+   (assert (solutionFound))
+)
 /*
 * Begins the animal game by clearing out the rule engine and running it.
 */
