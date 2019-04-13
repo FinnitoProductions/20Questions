@@ -5,6 +5,8 @@
 * Plays "20 Questions" with the user where the user thinks of an animal (out of a given list of options) and
 * the program will guess the animal by asking a series of yes/no questions (no more than 20) and apply the
 * rule engine to determine which animal they are thinking of.
+* 
+* Call the playGame function to clear out the rule engine and begin playing the animal game.
 */
 
 (clear)
@@ -43,7 +45,7 @@
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
    (printline "Welcome to the Think of an Animal Game!
-               Choose one of the following animals: dolphin, dog, snake, elephant, sea lion,
+               Choose one of the following animals: dolphin, dog, snake, lizard, elephant, sea lion,
                   penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, crab, parrot, water buffalo,
                   bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
 
@@ -474,6 +476,21 @@
 )
 
 /*
+* Defines the characteristics representative of a lizard. If all these are met, 
+* will print that the animal is a lizard.
+*/
+(defrule lizardRule "Defines the unique characteristics of a standard lizard."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded no)
+   (legs 4)
+   (isEaten no)
+   =>
+   (printout t "The animal is a lizard." crlf)
+   (assert (solutionFound))
+)
+
+/*
 * Defines the characteristics representative of a snail. If all these are met, 
 * will print that the animal is a snail.
 */
@@ -549,6 +566,7 @@
    (assert (solutionFound))
 )
 
+
 /*
 * Requests the user for a response to a given question. If it is valid (starts with either "Y", "N", or "?"), 
 * returns the starting character. Otherwise returns FALSE.
@@ -594,12 +612,17 @@
 (defrule foundSolution "Shuts off the system after the solution has been guessed."
    (solutionFound)
    =>
-   (clear) 
    (reset)
+   (halt) ; stops the rule engine from running to ensure no more questions are asked
    (bind ?*FOUND_SOLUTION* TRUE)
 )
 
-(reset)
-(run)
-(if (not ?*FOUND_SOLUTION*) then (printout t "Sorry! I was unable to determine what animal you were thinking of." crlf))
-(return)
+/*
+* Begins the animal game by clearing out the rule engine and running it.
+*/
+(deffunction playGame ()
+   (reset)
+   (run)
+   (if (not ?*FOUND_SOLUTION*) then (printout t "Sorry! I was unable to determine what animal you were thinking of." crlf))
+   (return)
+)
