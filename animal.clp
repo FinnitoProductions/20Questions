@@ -20,6 +20,7 @@
 (defglobal ?*VALID_UNCERTAIN_CHARACTER* = "?") ; will accept any string starting with this as indicating uncertainty
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
 (defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
+(defglobal ?*ANIMAL_RULE_SUFFIX* = "Rule") ; the suffix which will follow each rule defining the characteristics of a given animal
 
 /*
 * Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
@@ -44,10 +45,18 @@
 (defrule startup "Starts up the game and presents the instructions to the user."
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
-   (printline "Welcome to the Think of an Animal Game!
-               Choose one of the following animals: dolphin, dog, snake, lizard, elephant, sea lion,
-                  penguin, bee, camel, pig, zebra, bear, monkey, snail, armadillo, shrimp, crab, parrot, water buffalo,
-                  bat, and tortoise. I will ask you a series of questions about your animal, not exceeding 20 questions.
+   (bind ?animalString "")
+   (bind ?animals (getAnimals))
+   (for (bind ?i 1) (< ?i (length$ ?animals)) (++ ?i) 
+      (bind ?animal (nth$ ?i ?animals))
+      (bind ?animalString (str-cat ?animalString ?animal ", ")) ; create a string list of all the animals
+   )
+
+   (bind ?animalString (str-cat ?animalString "or " (nth$ (length$ ?animals) ?animals))) ; edge case for the final animal
+
+   (printout t "Welcome to the Think of an Animal Game!
+               Choose one of the following animals: " ?animalString 
+               ". I will ask you a series of questions about your animal, not exceeding 20 questions.
 
                Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
                   \"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
@@ -620,6 +629,30 @@
    (printout t "The animal is a " ?solution "." crlf)
    (assert (solutionFound))
 )
+
+/*
+* Returns a list of all the animals currently guessable by iterating through all the defined animal rules,
+* assuming the basic template "animalRule" for any given animal. This function assumes that of all the rules 
+* defined, only the animal-defining rules will follow the template "_Rule".
+*/
+(deffunction getAnimals ()
+   (bind ?rules (ppdefrule *))
+   (bind ?desiredLength (str-length ?*ANIMAL_RULE_SUFFIX*))
+   (bind ?ruleSeparator ":")
+   (bind ?animals (create$))
+   
+   (for (bind ?i 1) (< ?i (- (str-length ?rules) ?desiredLength)) (++ ?i)
+      (bind ?textToSearch (sub-string ?i (+ ?i (- ?desiredLength 1)) ?rules))
+      (if (eq ?textToSearch ?*ANIMAL_RULE_SUFFIX*) then
+         (for (bind ?j ?i) (and (> ?j 1) (not (eq (sub-string ?j ?j ?rules) ?ruleSeparator))) (-- ?j))
+         (bind ?animals (insert$ ?animals (+ (length$ ?animals) 1) (sub-string (+ ?j 1) (- ?i 1) ?rules)))
+      )
+   )
+   
+   (return ?animals)
+
+   ; (printout t ?rules)
+) ; deffunction getAnimals ()
 /*
 * Begins the animal game by clearing out the rule engine and running it.
 */
