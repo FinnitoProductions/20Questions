@@ -568,6 +568,7 @@
    (swimsOften no)
    (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the bee's bloodedness (unsure or no are both acceptable)
    (legs 6)
+   (hasShell no)
    (isMulticolored yes)
    => 
    (printSolution "bee")
@@ -582,9 +583,24 @@
    (swimsOften no)
    (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the ant's bloodedness (unsure or no are both acceptable)
    (legs 6)
+   (hasShell no)
    (isMulticolored no)
    => 
    (printSolution "ant")
+)
+
+/*
+* Defines the characteristics representative of an cockroach. If all these are met, 
+* will print that the animal is an cockroach.
+*/
+(defrule cockroachRule "Defines the unique characteristics of a standard cockroach."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the cockroach's bloodedness (unsure or no are both acceptable)
+   (legs 6)
+   (hasShell yes)
+   => 
+   (printSolution "cockroach")
 )
 
 /*
