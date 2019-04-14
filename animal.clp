@@ -121,7 +121,7 @@
 
    (foreach ?option ?legOptions
       (if (not ?didSucceed) then
-         (bind ?userResponse (askForFact (str-cat "Does the given animal have " ?option " legs (excluding flippers)")))
+         (bind ?userResponse (askForFact (str-cat "Does the given animal have " ?option " legs (excluding flippers or fins)")))
 
          (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then 
             (assert (legs ?option)) 
@@ -188,7 +188,7 @@
 (defrule askIsDark "Ask if the animal the user is thinking of is dark."
    (need-isDark ?)
    =>
-   (bind ?userResponse (askForFact "Is the given animal either brown or black"))
+   (bind ?userResponse (askForFact "Is the given animal entirely either brown or black"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (isDark yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (isDark no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (isDark unsure))
@@ -250,6 +250,21 @@
    (hasShell no)
    =>
    (printSolution "dolphin")
+)
+
+/*
+* Defines the characteristics representative of a goldfish. If all these are met, 
+* will print that the animal is a goldfish.
+*/
+(defrule goldfishRule "Defines the unique characteristics of a standard goldfish."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded no)
+   (legs 0)
+   (canSurviveOnLand no)
+   (hasShell no)
+   =>
+   (printSolution "goldfish")
 )
 
 /*
@@ -496,7 +511,6 @@
    (canFly no)
    (swimsOften yes)
    (warmBlooded no)
-   ;(legs ?x &~4 &~6) ; accounts for potential uncertainty in the number of legs of a shrimp (allowing unsure or any number that is not 4 or 6)
    (canSurviveOnLand no)
    (hasShell yes)
    =>
@@ -625,7 +639,6 @@
    (canFly no)
    (swimsOften yes)
    (warmBlooded no)
-   ;(legs ?x &~4 &~6) ; accounts for potential uncertainty in the number of legs of a crab (allowing unsure or any number that is not 4 or 6)
    (canSurviveOnLand yes)
    (hasShell yes)
    =>
