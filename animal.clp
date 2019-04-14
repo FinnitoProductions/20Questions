@@ -263,8 +263,25 @@
    (legs 0)
    (canSurviveOnLand no)
    (hasShell no)
+   (hasHeadProtrusions no)
    =>
    (printSolution "dolphin")
+)
+
+/*
+* Defines the characteristics representative of a narwhal. If all these are met, 
+* will print that the animal is a narwhal.
+*/
+(defrule narwhalRule "Defines the unique characteristics of a standard narwhal."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded yes)
+   (legs 0)
+   (canSurviveOnLand no)
+   (hasShell no)
+   (hasHeadProtrusions yes)
+   =>
+   (printSolution "narwhal")
 )
 
 /*
@@ -753,8 +770,24 @@
    (warmBlooded yes)
    (legs 0)
    (canSurviveOnLand yes)
+   (hasHeadProtrusions no)
    =>
    (printSolution "sea lion")
+)
+
+/*
+* Defines the characteristics representative of a walrus. If all these are met, 
+* will print that the animal is a walrus.
+*/
+(defrule walrusRule "Defines the unique characteristics of a standard walrus."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded yes)
+   (legs 0)
+   (canSurviveOnLand yes)
+   (hasHeadProtrusions yes)
+   =>
+   (printSolution "walrus")
 )
 
 
