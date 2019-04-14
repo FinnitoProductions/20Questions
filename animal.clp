@@ -389,6 +389,7 @@ enough information. Good luck!" crlf)
    (smallerThanAHuman no)
    (isEaten no)
    (isMulticolored yes)
+   (hasHeadProtrusions no)
    =>
    (printSolution "zebra")
 )
@@ -587,6 +588,24 @@ enough information. Good luck!" crlf)
    (hasHeadProtrusions no)
    =>
    (printSolution "elephant")
+)
+
+/*
+* Defines the characteristics representative of a giraffe. If all these are met, 
+* will print that the animal is a giraffe.
+*/
+(defrule giraffeRule "Defines the unique characteristics of a standard giraffe."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded yes)
+   (legs 4)
+   (smallerThanAHuman no)
+   (isEaten no)
+   (coldEnvironment no)
+   (isMulticolored yes)
+   (hasHeadProtrusions yes)
+   =>
+   (printSolution "giraffe")
 )
 
 /*
