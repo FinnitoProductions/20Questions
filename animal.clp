@@ -262,9 +262,26 @@
    (warmBlooded no)
    (legs 0)
    (canSurviveOnLand no)
+   (isEaten no)
    (hasShell no)
    =>
    (printSolution "goldfish")
+)
+
+/*
+* Defines the characteristics representative of a salmon. If all these are met, 
+* will print that the animal is a salmon.
+*/
+(defrule salmonRule "Defines the unique characteristics of a standard salmon."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded no)
+   (legs 0)
+   (canSurviveOnLand no)
+   (isEaten yes)
+   (hasShell no)
+   =>
+   (printSolution "salmon")
 )
 
 /*
