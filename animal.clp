@@ -559,6 +559,20 @@
 )
 
 /*
+* Defines the characteristics representative of an ant. If all these are met, 
+* will print that the animal is an ant.
+*/
+(defrule antRule "Defines the unique characteristics of a standard ant."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the ant's bloodedness (unsure or no are both acceptable)
+   (legs 6)
+   (isMulticolored no)
+   => 
+   (printSolution "ant")
+)
+
+/*
 * Defines the characteristics representative of a sea lion. If all these are met, 
 * will print that the animal is a sea lion.
 */
@@ -639,13 +653,25 @@
 )
 
 /* 
-* Prints out the solution to the problem and asserts that the solution has been found.
+* Prints out the solution to the problem and asserts that the solution has been found. If the given animal's name
+* starts with a vowel, will print using "an.""
 */ 
 (deffunction printSolution (?solution)
-   (printout t "The animal is a " ?solution "." crlf)
+   (bind ?prefixMessage "The animal is a")
+   (if (startsWithVowel ?solution) then (bind ?prefixMessage (str-cat ?prefixMessage "n ")) ; does start with vowel, so change "a" to "an"
+    else (bind ?prefixMessage (str-cat ?prefixMessage " ")) ; does not start with a vowel, so simply add a space
+   )
+   (printout t ?prefixMessage ?solution "." crlf)
    (assert (solutionFound))
 )
 
+/*
+* Determines whether a given non-empty string parameter starts with a vowel (excluding "y"), not case-sensitive.
+*/
+(deffunction startsWithVowel (?string)
+   (bind ?firstChar (lowcase (sub-string 1 1 ?string))) ; convert first character to lower case to ignore case
+   (return (or (eq ?firstChar "a") (eq ?firstChar "e") (eq ?firstChar "i") (eq ?firstChar "o") (eq ?firstChar "u")))
+)
 /*
 * Returns a list of all the animals currently guessable by iterating through all the defined animal rules,
 * assuming the basic template "animalRule" for any given animal. This function assumes that of all the rules 
