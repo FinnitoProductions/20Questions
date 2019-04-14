@@ -49,7 +49,7 @@
    (bind ?animalString "")
    (bind ?animals (getAnimals))
    (for (bind ?i 1) (< ?i (length$ ?animals)) (++ ?i) 
-      (bind ?animal (nth$ ?i ?animals))
+      (bind ?animal (camelCaseToPhrase (nth$ ?i ?animals))) ; converts the given animal from camel-case (how all the rules are defined) into traditional case
       (bind ?animalString (str-cat ?animalString ?animal ", ")) ; create a string list of all the animals
    )
 
@@ -967,6 +967,10 @@ enough information. Good luck!" crlf)
 * Returns a list of all the animals currently guessable by iterating through all the defined animal rules,
 * assuming the basic template "animalRule" for any given animal. This function assumes that of all the rules 
 * defined, only the animal-defining rules will follow the template "_Rule".
+*
+* Iterates through each phrase with the same length as the given rule suffix to find the location of each of these suffixes;
+* each time it finds this suffix, iterates backward until it finds the start of the rule name (marked by a colon). Uses these
+* two locations to find the animal's name. For instane, MAIN::polarBearRule would give "polarBear".
 */
 (deffunction getAnimals ()
    (bind ?rules (ppdefrule *))
@@ -974,7 +978,7 @@ enough information. Good luck!" crlf)
    (bind ?ruleSeparator ":")
    (bind ?animals (create$))
    
-   (for (bind ?i 1) (< ?i (- (str-length ?rules) ?desiredLength)) (++ ?i)
+   (for (bind ?i 1) (< ?i (- (str-length ?rules) ?desiredLength)) (++ ?i) 
       (bind ?textToSearch (sub-string ?i (+ ?i (- ?desiredLength 1)) ?rules))
       (if (eq ?textToSearch ?*ANIMAL_RULE_SUFFIX*) then
          (for (bind ?j ?i) (and (> ?j 1) (not (eq (sub-string ?j ?j ?rules) ?ruleSeparator))) (-- ?j))
@@ -984,6 +988,32 @@ enough information. Good luck!" crlf)
    
    (return ?animals)
 ) ; deffunction getAnimals ()
+
+/*
+* Converts a given phrase (presented in camel-case) into one with spaces between each word and no abnormal capitalization.
+*
+* Iterates through each character in the string to find all uppercase letters, which, in camel-case, denotes the start of a 
+* new word. Converts each uppercase letter to lowercase and adds a space before it to mark the start of a word in 
+* a traditional case.
+*/
+(deffunction camelCaseToPhrase (?camelCasePhrase)
+   (for (bind ?i 1) (<= ?i (str-length ?camelCasePhrase)) (++ ?i)
+      (bind ?currentChar (sub-string ?i ?i ?camelCasePhrase))
+      (if (isUpperCase ?currentChar) then
+         (bind ?prefix (sub-string 1 (- ?i 1) ?camelCasePhrase))
+         (bind ?suffix (sub-string (+ ?i 1) (str-length ?camelCasePhrase) ?camelCasePhrase))
+         (bind ?camelCasePhrase (str-cat ?prefix " " (lowcase ?currentChar) ?suffix)) ; 
+      )
+   )
+   (return ?camelCasePhrase)
+)
+
+/*
+* Determines whether a given character is in uppercase based on its ASCII value.
+*/
+(deffunction isUpperCase (?char)
+   (return (and (>= (asc ?char) (asc "A")) (<= (asc ?char) (asc "Z")))) ; all uppercase letters will fit into the range between "A" and "Z"
+)
 /*
 * Begins the animal game by clearing out the rule engine and running it.
 */
