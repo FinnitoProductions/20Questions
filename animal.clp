@@ -38,6 +38,7 @@
 (do-backward-chaining isMulticolored)
 (do-backward-chaining hasShell)
 (do-backward-chaining hotEnvironment)
+(do-backward-chaining hasHeadProtrusions)
 
 /*
 * Starts up the game and presents the detailed instructions to the user.
@@ -238,6 +239,20 @@
 )
 
 /*
+* Asks the user whether the animal they are thinking of has any protrusions out of its head (like antlers, horns, or tusks).
+* Triggers when the system needs to determine whether the animal has protrusions to narrow down the possibilities of the given animal.
+*/
+(defrule askHasHeadProtrusions "Ask if the animal the user is thinking of has protrusions from its head"
+   (need-hasHeadProtrusions ?)
+   =>
+   (bind ?userResponse (askForFact "Does the given animal have protrusions from its head (like tusks, horns, or antlers)"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (hasHeadProtrusions yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (hasHeadProtrusions no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (hasHeadProtrusions unsure))
+   )
+)
+
+/*
 * Defines the characteristics representative of a dolphin. If all these are met, 
 * will print that the animal is a dolphin.
 */
@@ -372,6 +387,7 @@
    (legs 4)
    (isDark yes)
    (hotEnvironment no)
+   (hasHeadProtrusions no)
    (isEaten no)
    =>
    (printSolution "black bear")
@@ -389,9 +405,28 @@
    (legs 4)
    (isDark no)
    (hotEnvironment no)
+   (hasHeadProtrusions no)
    (isEaten no)
    =>
    (printSolution "polar bear")
+)
+
+/*
+* Defines the characteristics representative of a moose. If all these are met, 
+* will print that the animal is a moose.
+*/
+(defrule mooseRule "Defines the unique characteristics of a standard moose."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded yes)
+   (smallerThanAHuman no)
+   (legs 4)
+   (isDark yes)
+   (hotEnvironment no)
+   (hasHeadProtrusions yes)
+   (isEaten no)
+   =>
+   (printSolution "moose")
 )
 
 /*
