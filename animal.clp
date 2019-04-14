@@ -849,6 +849,20 @@ enough information. Good luck!" crlf)
 )
 
 /*
+* Defines the characteristics representative of a lobster. If all these are met, 
+* will print that the animal is a lobster.
+*/
+(defrule lobsterRule "Defines the unique characteristics of a standard lobster."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the lobster's bloodedness (unsure or no are both acceptable)
+   (legs 8)
+   (hasShell yes)
+   => 
+   (printSolution "lobster")
+)
+
+/*
 * Defines the characteristics representative of a sea lion. If all these are met, 
 * will print that the animal is a sea lion.
 */
