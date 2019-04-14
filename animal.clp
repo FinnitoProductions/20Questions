@@ -496,7 +496,7 @@
    (canFly no)
    (swimsOften yes)
    (warmBlooded no)
-   (legs ?x &~4 &~6) ; accounts for potential uncertainty in the number of legs of a shrimp (allowing unsure or any number that is not 4 or 6)
+   ;(legs ?x &~4 &~6) ; accounts for potential uncertainty in the number of legs of a shrimp (allowing unsure or any number that is not 4 or 6)
    (canSurviveOnLand no)
    (hasShell yes)
    =>
@@ -625,7 +625,7 @@
    (canFly no)
    (swimsOften yes)
    (warmBlooded no)
-   (legs ?x &~4 &~6) ; accounts for potential uncertainty in the number of legs of a crab (allowing unsure or any number that is not 4 or 6)
+   ;(legs ?x &~4 &~6) ; accounts for potential uncertainty in the number of legs of a crab (allowing unsure or any number that is not 4 or 6)
    (canSurviveOnLand yes)
    (hasShell yes)
    =>
