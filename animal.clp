@@ -230,7 +230,7 @@
 (defrule askHotEnvironment "Ask if the animal the user is thinking of lives in a hot environment"
    (need-hotEnvironment ?)
    =>
-   (bind ?userResponse (askForFact "Does the given animal live exclusively in warm environments"))
+   (bind ?userResponse (askForFact "Does the given animal typically live in warm environments"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (hotEnvironment yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (hotEnvironment no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (hotEnvironment unsure))
