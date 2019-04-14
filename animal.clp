@@ -37,7 +37,7 @@
 (do-backward-chaining isDark)
 (do-backward-chaining isMulticolored)
 (do-backward-chaining hasShell)
-(do-backward-chaining hotEnvironment)
+(do-backward-chaining coldEnvironment)
 (do-backward-chaining hasHeadProtrusions)
 
 /*
@@ -225,16 +225,16 @@ enough information. Good luck!" crlf)
 )
 
 /*
-* Asks the user whether the animal they are thinking of lives in a hot environment. Triggers when the system
-* needs to determine whether the animal can survive in hot environments to narrow down the possibilities of the given animal.
+* Asks the user whether the animal they are thinking of lives in a cold environment. Triggers when the system
+* needs to determine whether the animal can survive in cold environments to narrow down the possibilities of the given animal.
 */
-(defrule askHotEnvironment "Ask if the animal the user is thinking of lives in a hot environment"
-   (need-hotEnvironment ?)
+(defrule askColdEnvironment "Ask if the animal the user is thinking of lives in a cold environment"
+   (need-coldEnvironment ?)
    =>
-   (bind ?userResponse (askForFact "Does the given animal typically live in warm environments"))
-   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (hotEnvironment yes))
-    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (hotEnvironment no))
-    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (hotEnvironment unsure))
+   (bind ?userResponse (askForFact "Does the given animal live far more often in cold environments"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (coldEnvironment yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (coldEnvironment no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (coldEnvironment unsure))
    )
 )
 
@@ -326,6 +326,7 @@ enough information. Good luck!" crlf)
    (legs 4)
    (smallerThanAHuman yes)
    (isEaten no)
+   (coldEnvironment no)
    (hasShell no)
    =>
    (printSolution "dog")
@@ -403,7 +404,7 @@ enough information. Good luck!" crlf)
    (smallerThanAHuman no)
    (legs 4)
    (isDark yes)
-   (hotEnvironment no)
+   (coldEnvironment yes)
    (hasHeadProtrusions no)
    (isEaten no)
    =>
@@ -421,7 +422,7 @@ enough information. Good luck!" crlf)
    (smallerThanAHuman no)
    (legs 4)
    (isDark no)
-   (hotEnvironment no)
+   (coldEnvironment yes)
    (hasHeadProtrusions no)
    (isEaten no)
    =>
@@ -439,7 +440,7 @@ enough information. Good luck!" crlf)
    (smallerThanAHuman no)
    (legs 4)
    (isDark yes)
-   (hotEnvironment no)
+   (coldEnvironment yes)
    (hasHeadProtrusions yes)
    (isEaten no)
    =>
@@ -458,7 +459,7 @@ enough information. Good luck!" crlf)
    (isEaten no)
    (isDark yes)
    (legs 2)
-   (hotEnvironment yes)
+   (coldEnvironment no)
    (isMulticolored ?x &~no) ; accounts for potential uncertainty in monkey's multicoloredness (will accept unsure or yes)
    =>
    (printSolution "monkey")
@@ -486,13 +487,28 @@ enough information. Good luck!" crlf)
 */
 (defrule penguinRule "Defines the unique characteristics of a standard penguin."
    (canFly no)
-   (swimsOften ?x) ; will accept any value for swims often because penguins could be seen as land-based or non-land-based
+   (swimsOften ?x &~no) ; accounts for potential uncertainty in whether a penguin swims often (will accept yes or unsure)
    (warmBlooded yes)
    (legs 2)
-   (hotEnvironment no)
+   (coldEnvironment yes)
    (isMulticolored yes)
    =>
    (printSolution "penguin")
+)
+
+/*
+* Defines the characteristics representative of an arctic squirrel. If all these are met, 
+* will print that the animal is an arctic squirrel.
+*/
+(defrule arcticSquirrelRule "Defines the unique characteristics of a standard arctic squirrel."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded yes)
+   (legs ?x &~0 &~6 &~8) ; accounts for potential uncertainty in an arctic squirrel's number of legs (will accept 2, 4, or unsure)
+   (smallerThanAHuman yes)
+   (coldEnvironment yes)
+   =>
+   (printSolution "arctic squirrel")
 )
 
 /*
@@ -504,7 +520,7 @@ enough information. Good luck!" crlf)
    (swimsOften no)
    (warmBlooded yes)
    (legs 2)
-   (hotEnvironment yes)
+   (coldEnvironment no)
    (isMulticolored yes)
    =>
    (printSolution "parrot")
@@ -566,7 +582,7 @@ enough information. Good luck!" crlf)
    (smallerThanAHuman no)
    (isEaten no)
    (isDark no)
-   (hotEnvironment yes)
+   (coldEnvironment no)
    (isMulticolored no)
    (hasHeadProtrusions no)
    =>
@@ -585,7 +601,7 @@ enough information. Good luck!" crlf)
    (smallerThanAHuman no)
    (isEaten no)
    (isDark no)
-   (hotEnvironment yes)
+   (coldEnvironment no)
    (isMulticolored no)
    (hasHeadProtrusions yes)
    =>
