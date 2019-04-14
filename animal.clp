@@ -591,6 +591,24 @@ enough information. Good luck!" crlf)
 )
 
 /*
+* Defines the characteristics representative of a gazelle. If all these are met, 
+* will print that the animal is a gazelle.
+*/
+(defrule gazelleRule "Defines the unique characteristics of a standard gazelle."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded yes)
+   (legs 4)
+   (smallerThanAHuman yes)
+   (isEaten no)
+   (isDark yes)
+   (coldEnvironment no)
+   (hasHeadProtrusions yes)
+   =>
+   (printSolution "gazelle")
+)
+
+/*
 * Defines the characteristics representative of a giraffe. If all these are met, 
 * will print that the animal is a giraffe.
 */
