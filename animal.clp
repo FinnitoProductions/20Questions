@@ -268,6 +268,21 @@
 )
 
 /*
+* Defines the characteristics representative of a rabbit. If all these are met, 
+* will print that the animal is a rabbit.
+*/
+(defrule rabbitRule "Defines the unique characteristics of a standard rabbit."
+   (canFly no)
+   (swimsOften no)
+   (legs 2)
+   (smallerThanAHuman yes)
+   (isEaten no)
+   (hasShell no)
+   =>
+   (printSolution "rabbit")
+)
+
+/*
 * Defines the characteristics representative of a camel. If all these are met, 
 * will print that the animal is a camel.
 */
