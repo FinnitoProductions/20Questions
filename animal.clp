@@ -55,7 +55,7 @@
    (bind ?animalString (str-cat ?animalString "or " (nth$ (length$ ?animals) ?animals))) ; edge case for the final animal
 
    (printout t "Welcome to the Think of an Animal Game!
-               Choose one of the following animals: " 
+               Choose one of the following " (length$ ?animals) " animals: " 
                ?animalString 
                ". I will ask you a series of questions about your animal, not exceeding 20 questions.
 
