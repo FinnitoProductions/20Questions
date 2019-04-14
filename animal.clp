@@ -427,6 +427,21 @@
 )
 
 /*
+* Defines the characteristics representative of a crow. If all these are met, 
+* will print that the animal is a crow.
+*/
+(defrule crowRule "Defines the unique characteristics of a standard crow."
+   (canFly yes)
+   (swimsOften no)
+   (warmBlooded yes)
+   (legs 2)
+   (isDark yes)
+   (isMulticolored no)
+   =>
+   (printSolution "crow")
+)
+
+/*
 * Defines the characteristics representative of a water buffalo. If all these are met, 
 * will print that the animal is a water buffalo.
 */
