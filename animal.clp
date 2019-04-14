@@ -56,16 +56,16 @@
    (bind ?animalString (str-cat ?animalString "or " (nth$ (length$ ?animals) ?animals))) ; edge case for the final animal
 
    (printout t "Welcome to the Think of an Animal Game!
-               Choose one of the following " (length$ ?animals) " animals: " 
+Choose one of the following " (length$ ?animals) " animals: " 
                ?animalString 
-               ". I will ask you a series of questions about your animal, not exceeding 20 questions.
+". I will ask you a series of questions about your animal, not exceeding 20 questions.
 
-               Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
-                  \"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
-                  and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
+Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
+\"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
+and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
                   
-               I will use the information from these questions to guess which animal you are thinking of once I have 
-                  enough information. Good luck!" crlf)
+I will use the information from these questions to guess which animal you are thinking of once I have 
+enough information. Good luck!" crlf)
 )
 
 /*
