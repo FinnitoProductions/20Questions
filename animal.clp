@@ -529,9 +529,40 @@
    (swimsOften yes)
    (warmBlooded no)
    (canSurviveOnLand no)
+   (legs ?x &~0) ; allows for potential uncertainty in the shrimp's number of legs (can be anything but 0 legs)
    (hasShell yes)
    =>
    (printSolution "shrimp")
+)
+
+/*
+* Defines the characteristics representative of a crab. If all these are met, 
+* will print that the animal is a crab.
+*/
+(defrule crabRule "Defines the unique characteristics of a standard crab."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded no)
+   (canSurviveOnLand yes)
+   (legs ?x &~0) ; allows for potential uncertainty in the crab's number of legs (can be anything but 0 legs)
+   (hasShell yes)
+   =>
+   (printSolution "crab")
+)
+
+/*
+* Defines the characteristics representative of a clam. If all these are met, 
+* will print that the animal is a clam.
+*/
+(defrule clamRule "Defines the unique characteristics of a standard clam."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded no)
+   (canSurviveOnLand no)
+   (legs 0)
+   (hasShell yes)
+   =>
+   (printSolution "clam")
 )
 
 /*
@@ -646,20 +677,6 @@
    (canSurviveOnLand yes)
    =>
    (printSolution "sea lion")
-)
-
-/*
-* Defines the characteristics representative of a crab. If all these are met, 
-* will print that the animal is a crab.
-*/
-(defrule crabRule "Defines the unique characteristics of a standard crab."
-   (canFly no)
-   (swimsOften yes)
-   (warmBlooded no)
-   (canSurviveOnLand yes)
-   (hasShell yes)
-   =>
-   (printSolution "crab")
 )
 
 
