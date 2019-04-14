@@ -116,7 +116,7 @@
 (defrule askLegs "Determines how many legs the animal the user is thinking of has."
    (need-legs ?)
    =>
-   (bind ?legOptions (create$ 4 0 2 6))
+   (bind ?legOptions (create$ 4 0 2 6 8))
    (bind ?didSucceed FALSE) ; whether or not the user has answered YES or UNSURE to any of the leg questions
 
    (foreach ?option ?legOptions
@@ -566,6 +566,21 @@
 )
 
 /*
+* Defines the characteristics representative of a octopus. If all these are met, 
+* will print that the animal is a octopus.
+*/
+(defrule octopusRule "Defines the unique characteristics of a standard octopus."
+   (canFly no)
+   (swimsOften yes)
+   (warmBlooded no)
+   (canSurviveOnLand no)
+   (legs 8)
+   (hasShell no)
+   =>
+   (printSolution "octopus")
+)
+
+/*
 * Defines the characteristics representative of a snake. If all these are met, 
 * will print that the animal is a snake.
 */
@@ -663,6 +678,34 @@
    (hasShell yes)
    => 
    (printSolution "cockroach")
+)
+
+/*
+* Defines the characteristics representative of an spider. If all these are met, 
+* will print that the animal is an spider.
+*/
+(defrule spiderRule "Defines the unique characteristics of a standard spider."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the spider's bloodedness (unsure or no are both acceptable)
+   (legs 8)
+   (hasShell no)
+   => 
+   (printSolution "spider")
+)
+
+/*
+* Defines the characteristics representative of an scorpion. If all these are met, 
+* will print that the animal is an scorpion.
+*/
+(defrule scorpionRule "Defines the unique characteristics of a standard scorpion."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the scorpion's bloodedness (unsure or no are both acceptable)
+   (legs 8)
+   (hasShell yes)
+   => 
+   (printSolution "scorpion")
 )
 
 /*
