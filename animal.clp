@@ -239,13 +239,13 @@ enough information. Good luck!" crlf)
 )
 
 /*
-* Asks the user whether the animal they are thinking of has any protrusions out of its head (like antlers, horns, or tusks).
+* Asks the user whether the animal they are thinking of has any protrusions out of the top of its head (like antlers, horns, or tusks, but not ears).
 * Triggers when the system needs to determine whether the animal has protrusions to narrow down the possibilities of the given animal.
 */
 (defrule askHasHeadProtrusions "Ask if the animal the user is thinking of has protrusions from its head"
    (need-hasHeadProtrusions ?)
    =>
-   (bind ?userResponse (askForFact "Does the given animal have protrusions from its head (like tusks, horns, or antlers)"))
+   (bind ?userResponse (askForFact "Does the given animal have protrusions from the top of its head (like tusks, horns, or antlers, but not ears)"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (hasHeadProtrusions yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (hasHeadProtrusions no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (hasHeadProtrusions unsure))
@@ -566,10 +566,30 @@ enough information. Good luck!" crlf)
    (smallerThanAHuman no)
    (isEaten no)
    (isDark no)
-   (hotEnvironments yes)
+   (hotEnvironment yes)
    (isMulticolored no)
+   (hasHeadProtrusions no)
    =>
    (printSolution "elephant")
+)
+
+/*
+* Defines the characteristics representative of a rhino. If all these are met, 
+* will print that the animal is a rhino.
+*/
+(defrule rhinoRule "Defines the unique characteristics of a standard rhino."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded yes)
+   (legs 4)
+   (smallerThanAHuman no)
+   (isEaten no)
+   (isDark no)
+   (hotEnvironment yes)
+   (isMulticolored no)
+   (hasHeadProtrusions yes)
+   =>
+   (printSolution "rhino")
 )
 
 /*
