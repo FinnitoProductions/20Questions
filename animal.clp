@@ -498,6 +498,21 @@ enough information. Good luck!" crlf)
 )
 
 /*
+* Defines the characteristics representative of a puffin. If all these are met, 
+* will print that the animal is a puffin.
+*/
+(defrule puffinRule "Defines the unique characteristics of a standard puffin."
+   (canFly yes)
+   (swimsOften ?x &~no) ; accounts for potential uncertainty in whether a puffin swims often (will accept yes or unsure)
+   (warmBlooded yes)
+   (legs 2)
+   (coldEnvironment yes)
+   (isMulticolored yes)
+   =>
+   (printSolution "puffin")
+)
+
+/*
 * Defines the characteristics representative of an arctic squirrel. If all these are met, 
 * will print that the animal is an arctic squirrel.
 */
