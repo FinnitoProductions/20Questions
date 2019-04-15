@@ -12,6 +12,14 @@
 (clear)
 (reset)
 
+(import javax.swing.*)
+(import javax.swing.JFrame) 
+(import java.awt.event.ActionListener)
+(import java.awt.BorderLayout)
+(import java.awt.Color)
+(import java.awt.Toolkit)
+(import java.awt.Dimension)
+
 (batch util/utilities.clp)
 
 (defglobal ?*questionNumber* = 1) ; question number will start at #1 and be incremented each time
@@ -19,8 +27,19 @@
 (defglobal ?*VALID_NO_CHARACTER* = "n") ; will accept any string starting with this as indicating "no"
 (defglobal ?*VALID_UNCERTAIN_CHARACTER* = "?") ; will accept any string starting with this as indicating uncertainty
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
-(defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
+(defglobal ?*GAME_RESOLVED* = FALSE) ; whether or not the game has reached a solution
 (defglobal ?*ANIMAL_RULE_SUFFIX* = "Rule") ; the suffix which will follow each rule defining the characteristics of a given animal
+(defglobal ?*WHILE_TRUE_WAIT_TIME* = 5) ; wait for 5 ms between ticks when a while loop is used to block the thread
+
+(defglobal ?*frame* = (new JFrame "Think of an Animal Game"))
+(defglobal ?*content* = (call ?*frame* getContentPane))
+
+/*
+* The following variables are defined to be global so that they can be accessed within a lambda action listener.
+*/
+(defglobal ?*textField* = (new JTextField))
+(defglobal ?*text* = 0)
+(defglobal ?*questionLabel* = (new JLabel ""))
 
 /*
 * Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
@@ -46,26 +65,7 @@
 (defrule startup "Starts up the game and presents the instructions to the user."
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
-   (bind ?animalString "")
-   (bind ?animals (getAnimals))
-   (for (bind ?i 1) (< ?i (length$ ?animals)) (++ ?i) 
-      (bind ?animal (camelCaseToPhrase (nth$ ?i ?animals))) ; converts the given animal from camel-case (how all the rules are defined) into traditional case
-      (bind ?animalString (str-cat ?animalString ?animal ", ")) ; create a string list of all the animals
-   )
-
-   (bind ?animalString (str-cat ?animalString "or " (nth$ (length$ ?animals) ?animals))) ; edge case for the final animal
-
-   (printout t "Welcome to the Think of an Animal Game!
-Choose one of the following " (length$ ?animals) " animals: " 
-               ?animalString 
-". I will ask you a series of questions about your animal, not exceeding 20 questions.
-
-Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
-\"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
-and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
-                  
-I will use the information from these questions to guess which animal you are thinking of once I have 
-enough information. Good luck!" crlf)
+   (call ?*frame* setVisible TRUE)
 )
 
 /*
@@ -898,9 +898,11 @@ enough information. Good luck!" crlf)
 * returns the starting character. Otherwise returns FALSE.
 */
 (deffunction requestValidatedInput (?questionVal)
-   (bind ?userInput (askQuestion (str-cat ?*questionNumber* ". " ?questionVal)))
-   (bind ?firstCharacter (lowcase (sub-string 1 1 ?userInput)))
+   (setQuestionText (str-cat ?*questionNumber* ". " ?questionVal "?"))
 
+   (while (or (eq ?*text* 0) (eq ?*text* "")) (call Thread sleep ?*WHILE_TRUE_WAIT_TIME*)) ; block the thread until non-empty input is received
+
+   (bind ?firstCharacter (lowcase (sub-string 1 1 ?*text*)))
    (bind ?isYesChar (eq ?firstCharacter ?*VALID_YES_CHARACTER*))
    (bind ?isNoChar (eq ?firstCharacter ?*VALID_NO_CHARACTER*))
    (bind ?isUncertainChar (eq ?firstCharacter ?*VALID_UNCERTAIN_CHARACTER*))
@@ -910,6 +912,8 @@ enough information. Good luck!" crlf)
     else (bind ?returnVal FALSE)
    )
 
+   (call ?*textField* setText "")
+   (bind ?*text* 0)
    (return ?returnVal)
 )
 
@@ -940,7 +944,7 @@ enough information. Good luck!" crlf)
    =>
    (reset)
    (halt) ; stops the rule engine from running to ensure no more questions are asked
-   (bind ?*FOUND_SOLUTION* TRUE)
+   (bind ?*GAME_RESOLVED* TRUE)
 )
 
 /* 
@@ -952,7 +956,7 @@ enough information. Good luck!" crlf)
    (if (startsWithVowel ?solution) then (bind ?prefixMessage (str-cat ?prefixMessage "n ")) ; does start with vowel, so change "a" to "an"
     else (bind ?prefixMessage (str-cat ?prefixMessage " ")) ; does not start with a vowel, so simply add a space
    )
-   (printout t ?prefixMessage ?solution "." crlf)
+   (setQuestionText (str-cat ?prefixMessage ?solution "."))
    (assert (solutionFound))
 )
 
@@ -963,6 +967,7 @@ enough information. Good luck!" crlf)
    (bind ?firstChar (lowcase (sub-string 1 1 ?string))) ; convert first character to lower case to ignore case
    (return (or (eq ?firstChar "a") (eq ?firstChar "e") (eq ?firstChar "i") (eq ?firstChar "o") (eq ?firstChar "u")))
 )
+
 /*
 * Returns a list of all the animals currently guessable by iterating through all the defined animal rules,
 * assuming the basic template "animalRule" for any given animal. This function assumes that of all the rules 
@@ -995,6 +1000,8 @@ enough information. Good luck!" crlf)
 * Iterates through each character in the string to find all uppercase letters, which, in camel-case, denotes the start of a 
 * new word. Converts each uppercase letter to lowercase and adds a space before it to mark the start of a word in 
 * a traditional case.
+*
+* The phrase given cannot end in an uppercase letter.
 */
 (deffunction camelCaseToPhrase (?camelCasePhrase)
    (for (bind ?i 1) (<= ?i (str-length ?camelCasePhrase)) (++ ?i)
@@ -1014,12 +1021,74 @@ enough information. Good luck!" crlf)
 (deffunction isUpperCase (?char)
    (return (and (>= (asc ?char) (asc "A")) (<= (asc ?char) (asc "Z")))) ; all uppercase letters will fit into the range between "A" and "Z"
 )
+
+/*
+* Sets up the GUI window given a piece of introductory text, adding all necessary items and displaying the 
+* window for the user to view.
+*/ 
+(deffunction setupWindow (?introText)
+   (call ?*frame* setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE))
+
+
+   (call ?*content* add (new JLabel ?introText) (BorderLayout.NORTH))
+
+   (call ?*content* add ?*questionLabel*)
+
+   (call ?*textField* setSize 10 10)
+   (call ?*content* add ?*textField* (BorderLayout.SOUTH))
+   (call ?*textField* addActionListener 
+      (implement ActionListener using 
+         (lambda (?name ?event)
+            (bind ?*text* (call ?*textField* getText))
+         )
+      )
+   )
+
+   (bind ?userScreenSize (call (call Toolkit getDefaultToolkit) getScreenSize))
+   (call ?*frame* setSize ?userScreenSize)
+) ; setupWindow (?introText)
+
+/*
+* Sets the text to be stored in the question JLabel to be a given string, using the correct HTML formatting.
+*/
+(deffunction setQuestionText (?text)
+   (call ?*questionLabel* setText (str-cat "<html><body><h1>" ?text "</h1></body></html>"))
+)
 /*
 * Begins the animal game by clearing out the rule engine and running it.
 */
 (deffunction playGame ()
-   (reset)
-   (run)
-   (if (not ?*FOUND_SOLUTION*) then (printout t "Sorry! I was unable to determine what animal you were thinking of." crlf))
+   (set-reset-globals FALSE) ; prevent global variables from being reset when (reset) is called to ensure the same window can be used repeatedly
+
+   (bind ?animalString "")
+   (bind ?animals (getAnimals))
+   (for (bind ?i 1) (< ?i (length$ ?animals)) (++ ?i) 
+      (bind ?animal (camelCaseToPhrase (nth$ ?i ?animals))) ; converts the given animal from camel-case (how all the rules are defined) into traditional case
+      (bind ?animalString (str-cat ?animalString ?animal ", ")) ; create a string list of all the animals
+   )
+
+   (bind ?animalString (str-cat ?animalString "or " (nth$ (length$ ?animals) ?animals))) ; edge case for the final animal
+
+   (bind ?introText (str-cat "<html><body>
+                              <h1 style = \"color:brown;font-size:18px;\">
+                              Welcome to the Think of an Animal Game! <br><br>
+                              Choose one of the following " (length$ ?animals) " animals: " 
+                              ?animalString 
+                              ". <br><br> I will ask you a series of questions about your animal, not exceeding 20 questions. Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
+\"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
+and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty. <br><br>
+                  
+I will use the information from these questions to guess which animal you are thinking of once I have 
+enough information. Once the game is over, it will repeat. Press Enter to start the next game and \"X\" to terminate the game.
+Good luck!</h1></body></html>"))
+   (setupWindow ?introText)
+
+   (while (not (eq ?*text* "X"))
+      (reset)
+      (bind ?*questionNumber* 1) ; reset the question to start at the beginning
+      (run)
+      (if (not ?*GAME_RESOLVED*) then (setQuestionText "Sorry! I was unable to determine what animal you were thinking of."))
+      (while (not (eq ?*text* "")) (call Thread sleep ?*WHILE_TRUE_WAIT_TIME*))
+   )
    (return)
-)
+) ; playGame ()
