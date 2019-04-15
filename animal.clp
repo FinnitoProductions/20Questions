@@ -583,6 +583,7 @@
    (swimsOften yes)
    (warmBlooded no)
    (legs 4)
+   (isEaten no)
    (canSurviveOnLand yes)
    (hasShell yes)
    =>
@@ -686,6 +687,7 @@
    (canFly no)
    (swimsOften yes)
    (warmBlooded no)
+   (isEaten yes)
    (canSurviveOnLand yes)
    (legs ?x &~0) ; allows for potential uncertainty in the crab's number of legs (can be anything but 0 legs)
    (hasShell yes)
