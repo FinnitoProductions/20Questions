@@ -59,6 +59,7 @@
 (do-backward-chaining hasShell)
 (do-backward-chaining coldEnvironment)
 (do-backward-chaining hasHeadProtrusions)
+(do-backward-chaining hasTrunk)
 
 /*
 * Starts up the game and presents the detailed instructions to the user.
@@ -248,10 +249,24 @@
 (defrule askHasHeadProtrusions "Ask if the animal the user is thinking of has protrusions from its head"
    (need-hasHeadProtrusions ?)
    =>
-   (bind ?userResponse (askForFact "Does the given animal have protrusions from the top of its head (like tusks, horns, or antlers, but not ears)"))
+   (bind ?userResponse (askForFact "Does the given animal have protrusions from its head (like tusks, horns, antlers, or trunks, but not ears)"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (hasHeadProtrusions yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (hasHeadProtrusions no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (hasHeadProtrusions unsure))
+   )
+)
+
+/*
+* Asks the user whether the animal they are thinking of has a trunk. Triggers when the system
+* needs to determine whether the animal has a trunk to narrow down the possibilities of the given animal.
+*/
+(defrule askHasTrunk "Ask if the animal the user is thinking of has a trunk"
+   (need-hasTrunk ?)
+   =>
+   (bind ?userResponse (askForFact "Does the given animal have a trunk"))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (hasTrunk yes))
+    elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (hasTrunk no))
+    elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (hasTrunk unsure))
    )
 )
 
@@ -421,7 +436,7 @@
 */
 (defrule polarBearRule "Defines the unique characteristics of a standard polar bear."
    (canFly no)
-   (swimsOften no)
+   (swimsOften yes)
    (warmBlooded yes)
    (smallerThanAHuman no)
    (legs 4)
@@ -575,10 +590,10 @@
 )
 
 /*
-* Defines the characteristics representative of a tortoise. If all these are met, 
-* will print that the animal is a tortoise.
+* Defines the characteristics representative of a turtle. If all these are met, 
+* will print that the animal is a turtle.
 */
-(defrule tortoiseRule "Defines the unique characteristics of a standard tortoise."
+(defrule turtleRule "Defines the unique characteristics of a standard turtle."
    (canFly no)
    (swimsOften yes)
    (warmBlooded no)
@@ -587,7 +602,7 @@
    (canSurviveOnLand yes)
    (hasShell yes)
    =>
-   (printSolution "tortoise")
+   (printSolution "turtle")
 )
 
 /*
@@ -604,10 +619,32 @@
    (isDark no)
    (coldEnvironment no)
    (isMulticolored no)
-   (hasHeadProtrusions no)
+   (hasHeadProtrusions yes)
+   (hasTrunk yes)
    =>
    (printSolution "elephant")
 )
+
+/*
+* Defines the characteristics representative of an anteater. If all these are met, 
+* will print that the animal is an anteater.
+*/
+(defrule anteaterRule "Defines the unique characteristics of a standard anteater."
+   (canFly no)
+   (swimsOften no)
+   (warmBlooded yes)
+   (legs 4)
+   (smallerThanAHuman yes)
+   (isEaten no)
+   (isDark no)
+   (coldEnvironment no)
+   (isMulticolored yes)
+   (hasHeadProtrusions no)
+   (hasTrunk yes)
+   =>
+   (printSolution "anteater")
+)
+
 
 /*
 * Defines the characteristics representative of a gazelle. If all these are met, 
@@ -660,6 +697,7 @@
    (coldEnvironment no)
    (isMulticolored no)
    (hasHeadProtrusions yes)
+   (hasTrunk no)
    =>
    (printSolution "rhino")
 )
@@ -805,24 +843,23 @@
    (swimsOften no)
    (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the ant's bloodedness (unsure or no are both acceptable)
    (legs 6)
-   (hasShell no)
-   (isMulticolored no)
+   (isDark yes)
    => 
    (printSolution "ant")
 )
 
 /*
-* Defines the characteristics representative of an cockroach. If all these are met, 
-* will print that the animal is an cockroach.
+* Defines the characteristics representative of an praying mantis. If all these are met, 
+* will print that the animal is an praying mantis.
 */
-(defrule cockroachRule "Defines the unique characteristics of a standard cockroach."
+(defrule prayingMantisRule "Defines the unique characteristics of a standard praying mantis."
    (canFly no)
    (swimsOften no)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the cockroach's bloodedness (unsure or no are both acceptable)
+   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the praying mantis's bloodedness (unsure or no are both acceptable)
    (legs 6)
-   (hasShell yes)
+   (isDark no)
    => 
-   (printSolution "cockroach")
+   (printSolution "praying mantis")
 )
 
 /*
@@ -1035,7 +1072,6 @@
 (deffunction setupWindow (?introText)
    (call ?*frame* setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE))
 
-
    (call ?*content* add (new JLabel ?introText) (BorderLayout.NORTH))
    (call ?*content* add ?*questionLabel* (BorderLayout.WEST))
    (call ?*content* add ?*invalidInputLabel* (BorderLayout.EAST))
@@ -1046,7 +1082,7 @@
    (call ?*textField* addActionListener 
       (implement ActionListener using 
          (lambda (?name ?event)
-            (bind ?*text* (call ?*textField* getText))
+            (bind ?*text* (call ?*textField* getText)) ; store the current data in the text field into the global variable
          )
       )
    )
