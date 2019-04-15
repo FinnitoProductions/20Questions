@@ -40,6 +40,7 @@
 (defglobal ?*textField* = (new JTextField))
 (defglobal ?*text* = 0)
 (defglobal ?*questionLabel* = (new JLabel ""))
+(defglobal ?*invalidInputLabel* = (new JLabel ""))
 
 /*
 * Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
@@ -66,6 +67,8 @@
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
    (call ?*frame* setVisible TRUE)
+   (bind ?*questionNumber* 1) ; reset the question count to start at the beginning
+   (bind ?*GAME_RESOLVED FALSE) ; depict that a solution has yet to be reached
 )
 
 /*
@@ -898,7 +901,7 @@
 * returns the starting character. Otherwise returns FALSE.
 */
 (deffunction requestValidatedInput (?questionVal)
-   (setQuestionText (str-cat ?*questionNumber* ". " ?questionVal "?"))
+   (setQuestionText ?*questionLabel* (str-cat ?*questionNumber* ". " ?questionVal "?"))
 
    (while (or (eq ?*text* 0) (eq ?*text* "")) (call Thread sleep ?*WHILE_TRUE_WAIT_TIME*)) ; block the thread until non-empty input is received
 
@@ -927,9 +930,10 @@
    (bind ?userInput (requestValidatedInput ?questionVal))
 
    (while (eq ?userInput FALSE) 
-      (printline ?*INVALID_INPUT_MESSAGE*)
+      (setQuestionText ?*invalidInputLabel* ?*INVALID_INPUT_MESSAGE*)
       (bind ?userInput (requestValidatedInput ?questionVal))
    )
+   (setQuestionText ?*invalidInputLabel* "")
 
    (++ ?*questionNumber*)
 
@@ -956,7 +960,7 @@
    (if (startsWithVowel ?solution) then (bind ?prefixMessage (str-cat ?prefixMessage "n ")) ; does start with vowel, so change "a" to "an"
     else (bind ?prefixMessage (str-cat ?prefixMessage " ")) ; does not start with a vowel, so simply add a space
    )
-   (setQuestionText (str-cat ?prefixMessage ?solution "."))
+   (setQuestionText ?*questionLabel* (str-cat ?prefixMessage ?solution "."))
    (assert (solutionFound))
 )
 
@@ -1031,8 +1035,9 @@
 
 
    (call ?*content* add (new JLabel ?introText) (BorderLayout.NORTH))
+   (call ?*content* add ?*questionLabel* (BorderLayout.WEST))
+   (call ?*content* add ?*invalidInputLabel* (BorderLayout.EAST))
 
-   (call ?*content* add ?*questionLabel*)
 
    (call ?*textField* setSize 10 10)
    (call ?*content* add ?*textField* (BorderLayout.SOUTH))
@@ -1049,10 +1054,10 @@
 ) ; setupWindow (?introText)
 
 /*
-* Sets the text to be stored in the question JLabel to be a given string, using the correct HTML formatting.
+* Sets the text to be stored in a given JLabel to be a given string, using the correct HTML formatting.
 */
-(deffunction setQuestionText (?text)
-   (call ?*questionLabel* setText (str-cat "<html><body><h1>" ?text "</h1></body></html>"))
+(deffunction setQuestionText (?label ?text)
+   (call ?label setText (str-cat "<html><body><h1>" ?text "</h1></body></html>"))
 )
 /*
 * Begins the animal game by clearing out the rule engine and running it.
@@ -1085,10 +1090,11 @@ Good luck!</h1></body></html>"))
 
    (while (not (eq ?*text* "X"))
       (reset)
-      (bind ?*questionNumber* 1) ; reset the question to start at the beginning
       (run)
-      (if (not ?*GAME_RESOLVED*) then (setQuestionText "Sorry! I was unable to determine what animal you were thinking of."))
+      (if (not ?*GAME_RESOLVED*) then (setQuestionText ?*questionLabel* "Sorry! I was unable to determine what animal you were thinking of."))
       (while (not (eq ?*text* "")) (call Thread sleep ?*WHILE_TRUE_WAIT_TIME*))
    )
    (return)
 ) ; playGame ()
+
+(playGame) ; begins the game for the user to play
