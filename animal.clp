@@ -69,7 +69,7 @@
    =>
    (call ?*frame* setVisible TRUE)
    (bind ?*questionNumber* 1) ; reset the question count to start at the beginning
-   (bind ?*GAME_RESOLVED FALSE) ; depict that a solution has yet to be reached
+   (bind ?*GAME_RESOLVED* FALSE) ; depict that a solution has yet to be reached
 )
 
 /*
@@ -957,7 +957,7 @@
    (call ?*textField* setText "")
    (bind ?*text* 0)
    (return ?returnVal)
-)
+) ; requestValidatedInput (?questionVal)
 
 /*
 * Asks the user whether a given fact is true or false (or if they are unsure). Valid input include any string starting 
