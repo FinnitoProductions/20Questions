@@ -375,6 +375,7 @@
    (legs 4)
    (smallerThanAHuman no)
    (isEaten no)
+   (coldEnvironment no)
    (isDark yes)
    (isMulticolored no)
    =>
