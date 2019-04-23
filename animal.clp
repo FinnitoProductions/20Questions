@@ -4,7 +4,7 @@
 *
 * Plays "20 Questions" with the user where the user thinks of an animal (out of a given list of options) and
 * the program will guess the animal by asking a series of yes/no questions (no more than 20) and apply the
-* rule engine to determine which animal they are thinking of.
+* rule engine to determine which animal they are thinking of. If the engine cannot guess the animal, will let the user no.
 * 
 * Call the playGame function to clear out the rule engine and begin playing the animal game.
 */
@@ -21,6 +21,7 @@
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
 (defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
 (defglobal ?*ANIMAL_RULE_SUFFIX* = "Rule") ; the suffix which will follow each rule defining the characteristics of a given animal
+(defglobal ?*TOTAL_ALLOWED_QUESTIONS* = 20) ; the game never reaches 20 questions, but this can be tested by assigning the variable to a lower number
 
 /*
 * Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
@@ -47,8 +48,11 @@
 (defrule startup "Starts up the game and presents the instructions to the user."
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
-
-   (printout t "Welcome to the Think of an Animal Game! Choose one of the following animals: ant, anteater, arctic squirrel, armadillo, bat, bee, black bear, camel, clam, crab, crow, dog, dolphin, elephant, gazelle, giraffe, goldfish, lizard, monkey, moose, narwhal, octopus, parrot, penguin, pig, polar bear, praying mantis, puffin, rabbit, rhino, salmon, scorpion, sea lion, shrimp, snail, snake, spider, turtle, walrus, water buffalo, or zebra. I will ask you a series of questions about your animal, not exceeding 20 questions.
+   (printout t "Welcome to the Think of an Animal Game! Choose one of the following animals: ant, anteater, arctic squirrel, 
+armadillo, bat, bee, black bear, camel, clam, crab, crow, dog, dolphin, elephant, gazelle, giraffe, 
+goldfish, lizard, monkey, moose, narwhal, octopus, parrot, penguin, pig, polar bear, praying mantis, puffin, 
+rabbit, rhino, salmon, scorpion, sea lion, shrimp, snail, snake, spider, turtle, walrus, water buffalo, or zebra. 
+I will ask you a series of questions about your animal, not exceeding 20 questions.
 
 Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
 \"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
@@ -56,7 +60,7 @@ and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
                   
 I will use the information from these questions to guess which animal you are thinking of once I have 
 enough information. Good luck!" crlf)
-)
+) ; startup
 
 /*
 * Asks the user whether the animal they are thinking of can fly. Triggers when the system
@@ -270,7 +274,7 @@ enough information. Good luck!" crlf)
    (hasHeadProtrusions no)
    =>
    (printSolution "dolphin")
-)
+) ; dolphinRule
 
 /*
 * Defines the characteristics representative of a narwhal. If all these are met, 
@@ -286,7 +290,7 @@ enough information. Good luck!" crlf)
    (hasHeadProtrusions yes)
    =>
    (printSolution "narwhal")
-)
+) ; narwhalRule
 
 /*
 * Defines the characteristics representative of a goldfish. If all these are met, 
@@ -302,7 +306,7 @@ enough information. Good luck!" crlf)
    (hasShell no)
    =>
    (printSolution "goldfish")
-)
+) ; goldfishRule
 
 /*
 * Defines the characteristics representative of a salmon. If all these are met, 
@@ -318,7 +322,7 @@ enough information. Good luck!" crlf)
    (hasShell no)
    =>
    (printSolution "salmon")
-)
+) ; salmonRule
 
 /*
 * Defines the characteristics representative of a dog. If all these are met, 
@@ -335,7 +339,7 @@ enough information. Good luck!" crlf)
    (hasShell no)
    =>
    (printSolution "dog")
-)
+) ; dogRule
 
 /*
 * Defines the characteristics representative of a rabbit. If all these are met, 
@@ -350,7 +354,7 @@ enough information. Good luck!" crlf)
    (hasShell no)
    =>
    (printSolution "rabbit")
-)
+) ; rabbitRule
 
 /*
 * Defines the characteristics representative of a camel. If all these are met, 
@@ -367,7 +371,7 @@ enough information. Good luck!" crlf)
    (isMulticolored no)
    =>
    (printSolution "camel")
-)
+) ; camelRule
 
 /*
 * Defines the characteristics representative of a pig. If all these are met, 
@@ -381,8 +385,8 @@ enough information. Good luck!" crlf)
    (isEaten yes)
    (isMulticolored yes)
    =>
-   (printSolution "snail")
-)
+   (printSolution "pig")
+) ; pigRule
 
 /*
 * Defines the characteristics representative of a zebra. If all these are met, 
@@ -398,7 +402,7 @@ enough information. Good luck!" crlf)
    (hasHeadProtrusions no)
    =>
    (printSolution "zebra")
-)
+) ; zebraRule
 
 /*
 * Defines the characteristics representative of a black bear. If all these are met, 
@@ -416,7 +420,7 @@ enough information. Good luck!" crlf)
    (isEaten no)
    =>
    (printSolution "black bear")
-)
+) ; blackBearRule
 
 /*
 * Defines the characteristics representative of a polar bear. If all these are met, 
@@ -434,7 +438,7 @@ enough information. Good luck!" crlf)
    (isEaten no)
    =>
    (printSolution "polar bear")
-)
+) ; polarBearRule
 
 /*
 * Defines the characteristics representative of a moose. If all these are met, 
@@ -452,7 +456,7 @@ enough information. Good luck!" crlf)
    (isEaten no)
    =>
    (printSolution "moose")
-)
+) ; mooseRule
 
 /*
 * Defines the characteristics representative of a monkey. If all these are met, 
@@ -469,7 +473,7 @@ enough information. Good luck!" crlf)
    (isMulticolored ?x &~no) ; accounts for potential uncertainty in monkey's multicoloredness (will accept unsure or yes)
    =>
    (printSolution "monkey")
-)
+) ; monkeyRule
 
 /*
 * Defines the characteristics representative of a armadillo. If all these are met, 
@@ -485,7 +489,7 @@ enough information. Good luck!" crlf)
    (hasShell yes)
    =>
    (printSolution "armadillo")
-)
+) ; armadilloRule
 
 /*
 * Defines the characteristics representative of a penguin. If all these are met, 
@@ -500,7 +504,7 @@ enough information. Good luck!" crlf)
    (isMulticolored yes)
    =>
    (printSolution "penguin")
-)
+) ; penguinRule
 
 /*
 * Defines the characteristics representative of a puffin. If all these are met, 
@@ -515,7 +519,7 @@ enough information. Good luck!" crlf)
    (isMulticolored yes)
    =>
    (printSolution "puffin")
-)
+) ; puffinRule
 
 /*
 * Defines the characteristics representative of an arctic squirrel. If all these are met, 
@@ -530,7 +534,7 @@ enough information. Good luck!" crlf)
    (coldEnvironment yes)
    =>
    (printSolution "arctic squirrel")
-)
+) ; arcticSquirrelRule 
 
 /*
 * Defines the characteristics representative of a parrot. If all these are met, 
@@ -545,7 +549,7 @@ enough information. Good luck!" crlf)
    (isMulticolored yes)
    =>
    (printSolution "parrot")
-)
+) ; parrotRule
 
 /*
 * Defines the characteristics representative of a crow. If all these are met, 
@@ -560,7 +564,7 @@ enough information. Good luck!" crlf)
    (isMulticolored no)
    =>
    (printSolution "crow")
-)
+) ; crowRule
 
 /*
 * Defines the characteristics representative of a water buffalo. If all these are met, 
@@ -574,7 +578,7 @@ enough information. Good luck!" crlf)
    (canSurviveOnLand yes)
    =>
    (printSolution "water buffalo")
-)
+) ; waterBuffaloRule
 
 /*
 * Defines the characteristics representative of a turtle. If all these are met, 
@@ -590,7 +594,7 @@ enough information. Good luck!" crlf)
    (hasShell yes)
    =>
    (printSolution "turtle")
-)
+) ; turtleRule
 
 /*
 * Defines the characteristics representative of a elephant. If all these are met, 
@@ -610,7 +614,7 @@ enough information. Good luck!" crlf)
    (hasTrunk yes)
    =>
    (printSolution "elephant")
-)
+) ; elephantRule
 
 /*
 * Defines the characteristics representative of an anteater. If all these are met, 
@@ -630,7 +634,7 @@ enough information. Good luck!" crlf)
    (hasTrunk yes)
    =>
    (printSolution "anteater")
-)
+) ; anteaterRule
 
 
 /*
@@ -649,7 +653,7 @@ enough information. Good luck!" crlf)
    (hasHeadProtrusions yes)
    =>
    (printSolution "gazelle")
-)
+) ; gazelleRule
 
 /*
 * Defines the characteristics representative of a giraffe. If all these are met, 
@@ -667,7 +671,7 @@ enough information. Good luck!" crlf)
    (hasHeadProtrusions yes)
    =>
    (printSolution "giraffe")
-)
+) ; giraffeRule
 
 /*
 * Defines the characteristics representative of a rhino. If all these are met, 
@@ -687,7 +691,7 @@ enough information. Good luck!" crlf)
    (hasTrunk no)
    =>
    (printSolution "rhino")
-)
+) ; rhinoRule
 
 /*
 * Defines the characteristics representative of a shrimp. If all these are met, 
@@ -702,7 +706,7 @@ enough information. Good luck!" crlf)
    (hasShell yes)
    =>
    (printSolution "shrimp")
-)
+) ; shrimpRule
 
 /*
 * Defines the characteristics representative of a crab. If all these are met, 
@@ -718,7 +722,7 @@ enough information. Good luck!" crlf)
    (hasShell yes)
    =>
    (printSolution "crab")
-)
+) ; crabRule
 
 /*
 * Defines the characteristics representative of a clam. If all these are met, 
@@ -733,7 +737,7 @@ enough information. Good luck!" crlf)
    (hasShell yes)
    =>
    (printSolution "clam")
-)
+) ; clamRule
 
 /*
 * Defines the characteristics representative of a octopus. If all these are met, 
@@ -748,7 +752,7 @@ enough information. Good luck!" crlf)
    (hasShell no)
    =>
    (printSolution "octopus")
-)
+) ; octopusRule
 
 /*
 * Defines the characteristics representative of a snake. If all these are met, 
@@ -762,7 +766,7 @@ enough information. Good luck!" crlf)
    (isEaten no)
    =>
    (printSolution "snake")
-)
+) ; snakeRule
 
 /*
 * Defines the characteristics representative of a lizard. If all these are met, 
@@ -776,7 +780,7 @@ enough information. Good luck!" crlf)
    (isEaten no)
    =>
    (printSolution "lizard")
-)
+) ; lizardRule
 
 /*
 * Defines the characteristics representative of a snail. If all these are met, 
@@ -791,7 +795,7 @@ enough information. Good luck!" crlf)
    (hasShell yes)
    =>
    (printSolution "snail")
-)
+) ; snailRule
 
 /*
 * Defines the characteristics representative of a bat. If all these are met, 
@@ -804,7 +808,7 @@ enough information. Good luck!" crlf)
    (legs 2)
    =>
    (printSolution "bat")
-)
+) ; batRule
 
 /*
 * Defines the characteristics representative of a bee. If all these are met, 
@@ -819,7 +823,7 @@ enough information. Good luck!" crlf)
    (isMulticolored yes)
    => 
    (printSolution "bee")
-)
+) ; beeRule
 
 /*
 * Defines the characteristics representative of an ant. If all these are met, 
@@ -833,7 +837,7 @@ enough information. Good luck!" crlf)
    (isDark yes)
    => 
    (printSolution "ant")
-)
+) ; antRule
 
 /*
 * Defines the characteristics representative of an praying mantis. If all these are met, 
@@ -847,7 +851,7 @@ enough information. Good luck!" crlf)
    (isDark no)
    => 
    (printSolution "praying mantis")
-)
+) ; prayingMantisRule
 
 /*
 * Defines the characteristics representative of an spider. If all these are met, 
@@ -861,7 +865,7 @@ enough information. Good luck!" crlf)
    (hasShell no)
    => 
    (printSolution "spider")
-)
+) ; spiderRule
 
 /*
 * Defines the characteristics representative of an scorpion. If all these are met, 
@@ -875,7 +879,7 @@ enough information. Good luck!" crlf)
    (hasShell yes)
    => 
    (printSolution "scorpion")
-)
+) ; scorpionRule
 
 /*
 * Defines the characteristics representative of a sea lion. If all these are met, 
@@ -890,7 +894,7 @@ enough information. Good luck!" crlf)
    (hasHeadProtrusions no)
    =>
    (printSolution "sea lion")
-)
+) ; seaLionRule
 
 /*
 * Defines the characteristics representative of a walrus. If all these are met, 
@@ -905,7 +909,7 @@ enough information. Good luck!" crlf)
    (hasHeadProtrusions yes)
    =>
    (printSolution "walrus")
-)
+) ; walrusRule
 
 
 /*
@@ -919,43 +923,50 @@ enough information. Good luck!" crlf)
    (bind ?isYesChar (eq ?firstCharacter ?*VALID_YES_CHARACTER*))
    (bind ?isNoChar (eq ?firstCharacter ?*VALID_NO_CHARACTER*))
    (bind ?isUncertainChar (eq ?firstCharacter ?*VALID_UNCERTAIN_CHARACTER*))
-   (bind ?isValid (or ?isYesChar ?isNoChar ?isUncertainChar))
+   (bind ?isValid (or ?isYesChar ?isNoChar ?isUncertainChar)) ; valid only if the character starts with "y", "n", or "?", not case-sensitive
 
    (if ?isValid then (bind ?returnVal ?firstCharacter)
-    else (bind ?returnVal FALSE)
+    else (bind ?returnVal FALSE) ; returns FALSE if the input is invalid
    )
 
    (return ?returnVal)
-)
+) ; requestValidatedInput (?questionVal)
 
 /*
 * Asks the user whether a given fact is true or false (or if they are unsure). Valid input include any string starting 
 * with "Y" to indicate yes, "N" to indicate no, and "?" to indicate uncertainty.
 *
-* Returns "Y" if the user specified yes, "N" if the user specified no, and "?" if the user specified uncertainty.
+* Returns "Y" if the user specified yes, "N" if the user specified no, and "?" if the user specified uncertainty. If the user exceeded
+* the total allowed questions, simply returns "".
 */
 (deffunction askForFact (?questionVal)
-   (bind ?userInput (requestValidatedInput ?questionVal))
+   (bind ?returnVal "")
+   (if (not ?*FOUND_SOLUTION*) then ; as long as a solution hasn't been guessed, will keep asking questions
+      (if (> ?*questionNumber* ?*TOTAL_ALLOWED_QUESTIONS*) then ; the user has exceeded the total number of questions
+         (endGame)
+         (printline (str-cat "I could not determine the answer within " ?*TOTAL_ALLOWED_QUESTIONS* " questions."))
+       else
+         (bind ?returnVal (requestValidatedInput ?questionVal))
 
-   (while (eq ?userInput FALSE) 
-      (printline ?*INVALID_INPUT_MESSAGE*)
-      (bind ?userInput (requestValidatedInput ?questionVal))
+         (while (eq ?returnVal FALSE) ; while the input is invalid, continually asks for new input
+            (printline ?*INVALID_INPUT_MESSAGE*)
+            (bind ?returnVal (requestValidatedInput ?questionVal))
+         )
+
+         (++ ?*questionNumber*)
+      )
    )
 
-   (++ ?*questionNumber*)
-
-   (return ?userInput)
-)
+   (return ?returnVal)
+) ; askForFact (?questionVal)
 
 /*
 * Triggers when an animal has been guessed, stopping the system from trying to guess any more animals. 
 */
-(defrule foundSolution "Shuts off the system after the solution has been guessed."
-   (solutionFound)
+(defrule gameFinished "Shuts off the system after the solution has been guessed."
+   (gameOver)
    =>
-   (reset)
-   (halt) ; stops the rule engine from running to ensure no more questions are asked
-   (bind ?*FOUND_SOLUTION* TRUE)
+   (endGame)
 )
 
 /* 
@@ -964,11 +975,13 @@ enough information. Good luck!" crlf)
 */ 
 (deffunction printSolution (?solution)
    (bind ?prefixMessage "The animal is a")
-   (if (startsWithVowel ?solution) then (bind ?prefixMessage (str-cat ?prefixMessage "n ")) ; does start with vowel, so change "a" to "an"
-    else (bind ?prefixMessage (str-cat ?prefixMessage " ")) ; does not start with a vowel, so simply add a space
+
+   (if (startsWithVowel ?solution) then (bind ?prefixMessage (str-cat ?prefixMessage "n ")) ; does start with vowel, so change "a" to "an" and add a space
+    else (bind ?prefixMessage (str-cat ?prefixMessage " ")) ; does not start with a vowel, so simply add a space after "a"
    )
+
    (printout t ?prefixMessage ?solution "." crlf)
-   (assert (solutionFound))
+   (assert (gameOver))
 )
 
 /*
@@ -979,59 +992,13 @@ enough information. Good luck!" crlf)
    (return (or (eq ?firstChar "a") (eq ?firstChar "e") (eq ?firstChar "i") (eq ?firstChar "o") (eq ?firstChar "u")))
 )
 
-
 /*
-* Returns a list of all the animals currently guessable by iterating through all the defined animal rules,
-* assuming the basic template "animalRule" for any given animal. This function assumes that of all the rules 
-* defined, only the animal-defining rules will follow the template "_Rule".
-*
-* Iterates through each phrase with the same length as the given rule suffix to find the location of each of these suffixes;
-* each time it finds this suffix, iterates backward until it finds the start of the rule name (marked by a colon). Uses these
-* two locations to find the animal's name. For instane, MAIN::polarBearRule would give "polarBear".
+* Ends the game by stopping the rule engine and resetting.
 */
-(deffunction getAnimals ()
-   (bind ?rules (ppdefrule *))
-   (bind ?desiredLength (str-length ?*ANIMAL_RULE_SUFFIX*))
-   (bind ?ruleSeparator ":")
-   (bind ?animals (create$))
-   
-   (for (bind ?i 1) (< ?i (- (str-length ?rules) ?desiredLength)) (++ ?i) 
-      (bind ?textToSearch (sub-string ?i (+ ?i (- ?desiredLength 1)) ?rules))
-      (if (eq ?textToSearch ?*ANIMAL_RULE_SUFFIX*) then
-         (for (bind ?j ?i) (and (> ?j 1) (not (eq (sub-string ?j ?j ?rules) ?ruleSeparator))) (-- ?j))
-         (bind ?animals (insert$ ?animals (+ (length$ ?animals) 1) (sub-string (+ ?j 1) (- ?i 1) ?rules)))
-      )
-   )
-   
-   (return ?animals)
-) ; deffunction getAnimals ()
-
-/*
-* Converts a given phrase (presented in camel-case) into one with spaces between each word and no abnormal capitalization.
-*
-* Iterates through each character in the string to find all uppercase letters, which, in camel-case, denotes the start of a 
-* new word. Converts each uppercase letter to lowercase and adds a space before it to mark the start of a word in 
-* a traditional case.
-*
-* The phrase given cannot end in an uppercase letter.
-*/
-(deffunction camelCaseToPhrase (?camelCasePhrase)
-   (for (bind ?i 1) (<= ?i (str-length ?camelCasePhrase)) (++ ?i)
-      (bind ?currentChar (sub-string ?i ?i ?camelCasePhrase))
-      (if (isUpperCase ?currentChar) then
-         (bind ?prefix (sub-string 1 (- ?i 1) ?camelCasePhrase))
-         (bind ?suffix (sub-string (+ ?i 1) (str-length ?camelCasePhrase) ?camelCasePhrase))
-         (bind ?camelCasePhrase (str-cat ?prefix " " (lowcase ?currentChar) ?suffix)) ; 
-      )
-   )
-   (return ?camelCasePhrase)
-)
-
-/*
-* Determines whether a given character is in uppercase based on its ASCII value.
-*/
-(deffunction isUpperCase (?char)
-   (return (and (>= (asc ?char) (asc "A")) (<= (asc ?char) (asc "Z")))) ; all uppercase letters will fit into the range between "A" and "Z"
+(deffunction endGame ()
+   (reset)
+   (halt) ; stops the rule engine from running to ensure no more questions are asked
+   (bind ?*FOUND_SOLUTION* TRUE)
 )
 
 /*
