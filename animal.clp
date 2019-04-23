@@ -12,14 +12,6 @@
 (clear)
 (reset)
 
-(import javax.swing.*)
-(import javax.swing.JFrame) 
-(import java.awt.event.ActionListener)
-(import java.awt.BorderLayout)
-(import java.awt.Color)
-(import java.awt.Toolkit)
-(import java.awt.Dimension)
-
 (batch util/utilities.clp)
 
 (defglobal ?*questionNumber* = 1) ; question number will start at #1 and be incremented each time
@@ -27,20 +19,8 @@
 (defglobal ?*VALID_NO_CHARACTER* = "n") ; will accept any string starting with this as indicating "no"
 (defglobal ?*VALID_UNCERTAIN_CHARACTER* = "?") ; will accept any string starting with this as indicating uncertainty
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
-(defglobal ?*GAME_RESOLVED* = FALSE) ; whether or not the game has reached a solution
+(defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
 (defglobal ?*ANIMAL_RULE_SUFFIX* = "Rule") ; the suffix which will follow each rule defining the characteristics of a given animal
-(defglobal ?*WHILE_TRUE_WAIT_TIME* = 5) ; wait for 5 ms between ticks when a while loop is used to block the thread
-
-(defglobal ?*frame* = (new JFrame "Think of an Animal Game"))
-(defglobal ?*content* = (call ?*frame* getContentPane))
-
-/*
-* The following variables are defined to be global so that they can be accessed within a lambda action listener.
-*/
-(defglobal ?*textField* = (new JTextField))
-(defglobal ?*text* = 0)
-(defglobal ?*questionLabel* = (new JLabel ""))
-(defglobal ?*invalidInputLabel* = (new JLabel ""))
 
 /*
 * Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
@@ -67,9 +47,15 @@
 (defrule startup "Starts up the game and presents the instructions to the user."
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
-   (call ?*frame* setVisible TRUE)
-   (bind ?*questionNumber* 1) ; reset the question count to start at the beginning
-   (bind ?*GAME_RESOLVED* FALSE) ; depict that a solution has yet to be reached
+
+   (printout t "Welcome to the Think of an Animal Game! Choose one of the following animals: ant, anteater, arctic squirrel, armadillo, bat, bee, black bear, camel, clam, crab, crow, dog, dolphin, elephant, gazelle, giraffe, goldfish, lizard, lobster, monkey, moose, narwhal, octopus, parrot, penguin, pig, polar bear, praying mantis, puffin, rabbit, rhino, salmon, scorpion, sea lion, shrimp, snail, snake, spider, turtle, walrus, water buffalo, or zebra. I will ask you a series of questions about your animal, not exceeding 20 questions.
+
+Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
+\"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
+and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
+                  
+I will use the information from these questions to guess which animal you are thinking of once I have 
+enough information. Good luck!" crlf)
 )
 
 /*
@@ -235,7 +221,7 @@
 (defrule askColdEnvironment "Ask if the animal the user is thinking of lives in a cold environment"
    (need-coldEnvironment ?)
    =>
-   (bind ?userResponse (askForFact "Does the given animal live far more often in cold environments"))
+   (bind ?userResponse (askForFact "Does the given animal live far more often in cold or temperate environments"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (coldEnvironment yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (coldEnvironment no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (coldEnvironment unsure))
@@ -345,6 +331,7 @@
    (smallerThanAHuman yes)
    (isEaten no)
    (coldEnvironment no)
+   (hasHeadProtrusions no)
    (hasShell no)
    =>
    (printSolution "dog")
@@ -477,7 +464,6 @@
    (warmBlooded yes)
    (smallerThanAHuman no)
    (isEaten no)
-   (isDark yes)
    (legs 2)
    (coldEnvironment no)
    (isMulticolored ?x &~no) ; accounts for potential uncertainty in monkey's multicoloredness (will accept unsure or yes)
@@ -640,7 +626,7 @@
    (isDark no)
    (coldEnvironment no)
    (isMulticolored yes)
-   (hasHeadProtrusions no)
+   (hasHeadProtrusions yes)
    (hasTrunk yes)
    =>
    (printSolution "anteater")
@@ -941,11 +927,9 @@
 * returns the starting character. Otherwise returns FALSE.
 */
 (deffunction requestValidatedInput (?questionVal)
-   (setQuestionText ?*questionLabel* (str-cat ?*questionNumber* ". " ?questionVal "?"))
+   (bind ?userInput (askQuestion (str-cat ?*questionNumber* ". " ?questionVal)))
+   (bind ?firstCharacter (lowcase (sub-string 1 1 ?userInput)))
 
-   (while (or (eq ?*text* 0) (eq ?*text* "")) (call Thread sleep ?*WHILE_TRUE_WAIT_TIME*)) ; block the thread until non-empty input is received
-
-   (bind ?firstCharacter (lowcase (sub-string 1 1 ?*text*)))
    (bind ?isYesChar (eq ?firstCharacter ?*VALID_YES_CHARACTER*))
    (bind ?isNoChar (eq ?firstCharacter ?*VALID_NO_CHARACTER*))
    (bind ?isUncertainChar (eq ?firstCharacter ?*VALID_UNCERTAIN_CHARACTER*))
@@ -955,10 +939,8 @@
     else (bind ?returnVal FALSE)
    )
 
-   (call ?*textField* setText "")
-   (bind ?*text* 0)
    (return ?returnVal)
-) ; requestValidatedInput (?questionVal)
+)
 
 /*
 * Asks the user whether a given fact is true or false (or if they are unsure). Valid input include any string starting 
@@ -970,10 +952,9 @@
    (bind ?userInput (requestValidatedInput ?questionVal))
 
    (while (eq ?userInput FALSE) 
-      (setQuestionText ?*invalidInputLabel* ?*INVALID_INPUT_MESSAGE*)
+      (printline ?*INVALID_INPUT_MESSAGE*)
       (bind ?userInput (requestValidatedInput ?questionVal))
    )
-   (setQuestionText ?*invalidInputLabel* "")
 
    (++ ?*questionNumber*)
 
@@ -988,7 +969,7 @@
    =>
    (reset)
    (halt) ; stops the rule engine from running to ensure no more questions are asked
-   (bind ?*GAME_RESOLVED* TRUE)
+   (bind ?*FOUND_SOLUTION* TRUE)
 )
 
 /* 
@@ -1000,7 +981,7 @@
    (if (startsWithVowel ?solution) then (bind ?prefixMessage (str-cat ?prefixMessage "n ")) ; does start with vowel, so change "a" to "an"
     else (bind ?prefixMessage (str-cat ?prefixMessage " ")) ; does not start with a vowel, so simply add a space
    )
-   (setQuestionText ?*questionLabel* (str-cat ?prefixMessage ?solution "."))
+   (printout t ?prefixMessage ?solution "." crlf)
    (assert (solutionFound))
 )
 
@@ -1011,6 +992,7 @@
    (bind ?firstChar (lowcase (sub-string 1 1 ?string))) ; convert first character to lower case to ignore case
    (return (or (eq ?firstChar "a") (eq ?firstChar "e") (eq ?firstChar "i") (eq ?firstChar "o") (eq ?firstChar "u")))
 )
+
 
 /*
 * Returns a list of all the animals currently guessable by iterating through all the defined animal rules,
@@ -1067,73 +1049,13 @@
 )
 
 /*
-* Sets up the GUI window given a piece of introductory text, adding all necessary items and displaying the 
-* window for the user to view.
-*/ 
-(deffunction setupWindow (?introText)
-   (call ?*frame* setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE))
-
-   (call ?*content* add (new JLabel ?introText) (BorderLayout.NORTH))
-   (call ?*content* add ?*questionLabel* (BorderLayout.WEST))
-   (call ?*content* add ?*invalidInputLabel* (BorderLayout.EAST))
-
-
-   (call ?*textField* setSize 10 10)
-   (call ?*content* add ?*textField* (BorderLayout.SOUTH))
-   (call ?*textField* addActionListener 
-      (implement ActionListener using 
-         (lambda (?name ?event)
-            (bind ?*text* (call ?*textField* getText)) ; store the current data in the text field into the global variable
-         )
-      )
-   )
-
-   (bind ?userScreenSize (call (call Toolkit getDefaultToolkit) getScreenSize))
-   (call ?*frame* setSize ?userScreenSize)
-) ; setupWindow (?introText)
-
-/*
-* Sets the text to be stored in a given JLabel to be a given string, using the correct HTML formatting.
-*/
-(deffunction setQuestionText (?label ?text)
-   (call ?label setText (str-cat "<html><body><h1>" ?text "</h1></body></html>"))
-)
-/*
 * Begins the animal game by clearing out the rule engine and running it.
 */
 (deffunction playGame ()
-   (set-reset-globals FALSE) ; prevent global variables from being reset when (reset) is called to ensure the same window can be used repeatedly
-
-   (bind ?animalString "")
-   (bind ?animals (getAnimals))
-   (for (bind ?i 1) (< ?i (length$ ?animals)) (++ ?i) 
-      (bind ?animal (camelCaseToPhrase (nth$ ?i ?animals))) ; converts the given animal from camel-case (how all the rules are defined) into traditional case
-      (bind ?animalString (str-cat ?animalString ?animal ", ")) ; create a string list of all the animals
-   )
-
-   (bind ?animalString (str-cat ?animalString "or " (nth$ (length$ ?animals) ?animals))) ; edge case for the final animal
-
-   (bind ?introText (str-cat "<html><body>
-                              <h1 style = \"color:brown;font-size:18px;\">
-                              Welcome to the Think of an Animal Game! <br><br>
-                              Choose one of the following " (length$ ?animals) " animals: " 
-                              ?animalString 
-                              ". <br><br> I will ask you a series of questions about your animal, not exceeding 20 questions. Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
-\"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
-and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty. <br><br>
-                  
-I will use the information from these questions to guess which animal you are thinking of once I have 
-enough information. Once the game is over, it will repeat. Press Enter to start the next game and \"X\" to terminate the game.
-Good luck!</h1></body></html>"))
-   (setupWindow ?introText)
-
-   (while (not (eq ?*text* "X"))
-      (reset)
-      (run)
-      (if (not ?*GAME_RESOLVED*) then (setQuestionText ?*questionLabel* "Sorry! I was unable to determine what animal you were thinking of."))
-      (while (not (eq ?*text* "")) (call Thread sleep ?*WHILE_TRUE_WAIT_TIME*))
-   )
+   (reset)
+   (run)
+   (if (not ?*FOUND_SOLUTION*) then (printout t "Sorry! I was unable to determine what animal you were thinking of." crlf))
    (return)
-) ; playGame ()
+)
 
 (playGame) ; begins the game for the user to play
