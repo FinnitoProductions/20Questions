@@ -23,6 +23,8 @@
 (defglobal ?*ANIMAL_RULE_SUFFIX* = "Rule") ; the suffix which will follow each rule defining the characteristics of a given animal
 (defglobal ?*TOTAL_ALLOWED_QUESTIONS* = 20) ; the game never reaches 20 questions, but this can be tested by assigning the variable to a lower number
 
+(set-reset-globals TRUE) ; reset global variables when a (reset) is called to allow ?*FOUND_SOLUTION* and ?*questionNumber* to be reset each time
+
 /*
 * Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
 * to evaluate a rule, a separate backward-chained rule will be fired to ask the user whether or not the given
@@ -60,6 +62,7 @@ and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
                   
 I will use the information from these questions to guess which animal you are thinking of once I have 
 enough information. Good luck!" crlf)
+   (bind ?*FOUND_SOLUTION* FALSE)
 ) ; startup
 
 /*
