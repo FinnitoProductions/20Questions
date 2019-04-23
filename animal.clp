@@ -48,7 +48,7 @@
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
 
-   (printout t "Welcome to the Think of an Animal Game! Choose one of the following animals: ant, anteater, arctic squirrel, armadillo, bat, bee, black bear, camel, clam, crab, crow, dog, dolphin, elephant, gazelle, giraffe, goldfish, lizard, lobster, monkey, moose, narwhal, octopus, parrot, penguin, pig, polar bear, praying mantis, puffin, rabbit, rhino, salmon, scorpion, sea lion, shrimp, snail, snake, spider, turtle, walrus, water buffalo, or zebra. I will ask you a series of questions about your animal, not exceeding 20 questions.
+   (printout t "Welcome to the Think of an Animal Game! Choose one of the following animals: ant, anteater, arctic squirrel, armadillo, bat, bee, black bear, camel, clam, crab, crow, dog, dolphin, elephant, gazelle, giraffe, goldfish, lizard, monkey, moose, narwhal, octopus, parrot, penguin, pig, polar bear, praying mantis, puffin, rabbit, rhino, salmon, scorpion, sea lion, shrimp, snail, snake, spider, turtle, walrus, water buffalo, or zebra. I will ask you a series of questions about your animal, not exceeding 20 questions.
 
 Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
 \"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
@@ -875,20 +875,6 @@ enough information. Good luck!" crlf)
    (hasShell yes)
    => 
    (printSolution "scorpion")
-)
-
-/*
-* Defines the characteristics representative of a lobster. If all these are met, 
-* will print that the animal is a lobster.
-*/
-(defrule lobsterRule "Defines the unique characteristics of a standard lobster."
-   (canFly no)
-   (swimsOften yes)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the lobster's bloodedness (unsure or no are both acceptable)
-   (legs 8)
-   (hasShell yes)
-   => 
-   (printSolution "lobster")
 )
 
 /*
