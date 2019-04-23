@@ -108,26 +108,26 @@ enough information. Good luck!" crlf)
 )
 
 /*
-* Determines how many legs the given animal has by asking whether it has 4, 0, 2, or 6 legs. Triggers when the system
+* Determines how many legs the given animal has by asking whether it has 4, 0, 2, 6, or 8 legs. Triggers when the system
 * needs to determine how many legs the animal has to narrow down the possibilities of the given animal.
 */
 (defrule askLegs "Determines how many legs the animal the user is thinking of has."
    (need-legs ?)
    =>
-   (bind ?legOptions (create$ 4 0 2 6 8))
+   (bind ?legOptions (create$ 4 0 2 6 8)) ; the list of all possible values of legs the system will ask about
    (bind ?didSucceed FALSE) ; whether or not the user has answered YES or UNSURE to any of the leg questions
 
    (foreach ?option ?legOptions
-      (if (not ?didSucceed) then
+      (if (not ?didSucceed) then ; only continue to ask if the user has not answered YES or UNSURE to any of the questions
          (bind ?userResponse (askForFact (str-cat "Does the given animal have " ?option " legs (excluding flippers or fins)")))
 
-         (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then 
+         (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then ; the user has responded 
             (assert (legs ?option)) 
             (bind ?didSucceed TRUE)
-         elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (bind ?didSucceed FALSE)
+         elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (bind ?didSucceed FALSE) ; must keep asking until the list is exhausted
          elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then
-            (assert (legs unsure)) 
-            (bind (?didSucceed TRUE))
+            (assert (legs unsure)) ; if they are unsure about any number of legs, stop asking further questions
+            (bind ?didSucceed TRUE)
          )
       )
    )
