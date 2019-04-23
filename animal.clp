@@ -23,12 +23,12 @@
 (defglobal ?*ANIMAL_RULE_SUFFIX* = "Rule") ; the suffix which will follow each rule defining the characteristics of a given animal
 (defglobal ?*TOTAL_ALLOWED_QUESTIONS* = 20) ; the game never reaches 20 questions, but this can be tested by assigning the variable to a lower number
 
-(set-reset-globals TRUE) ; reset global variables when a (reset) is called to allow ?*FOUND_SOLUTION* and ?*questionNumber* to be reset each time
+(set-reset-globals TRUE) ; reset global variables when a (reset) is called to allow ?*FOUND_SOLUTION* and ?*questionNumber* to be reset with each new game
 
 /*
 * Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
-* to evaluate a rule, a separate backward-chained rule will be fired to ask the user whether or not the given
-* trait is valid.
+* to determine whether a rule should be triggered, a separate backward-chained rule will be fired to ask the user 
+* about the given trait.
 */
 (do-backward-chaining canFly)
 (do-backward-chaining swimsOften)
@@ -974,7 +974,7 @@ enough information. Good luck!" crlf)
 
 /* 
 * Prints out the solution to the problem and asserts that the solution has been found. If the given animal's name
-* starts with a vowel, will print using "an.""
+* starts with a vowel, will print using "an."
 */ 
 (deffunction printSolution (?solution)
    (bind ?prefixMessage "The animal is a")
@@ -996,7 +996,7 @@ enough information. Good luck!" crlf)
 )
 
 /*
-* Ends the game by stopping the rule engine and resetting.
+* Ends the animal game by stopping the rule engine and resetting.
 */
 (deffunction endGame ()
    (reset)
