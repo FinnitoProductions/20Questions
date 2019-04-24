@@ -4,9 +4,11 @@
 *
 * Plays "20 Questions" with the user where the user thinks of an animal (out of a given list of options) and
 * the program will guess the animal by asking a series of yes/no questions (no more than 20) and apply the
-* rule engine to determine which animal they are thinking of. If the engine cannot guess the animal, will let the user no.
+* rule engine to determine which animal they are thinking of. If the engine cannot guess the animal, will let the user know.
 * 
-* Call the playGame function to clear out the rule engine and begin playing the animal game.
+* Each time you would like to play the animal game, call the playGame function to clear out the rule engine. The system will
+* continue asking questions until it exhausts the available possibilities, exceeds the allowed number of questions (20), or 
+* determines what animal the user is thinking of.
 */
 
 (clear)
@@ -21,7 +23,7 @@
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
 (defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
 (defglobal ?*ANIMAL_RULE_SUFFIX* = "Rule") ; the suffix which will follow each rule defining the characteristics of a given animal
-(defglobal ?*TOTAL_ALLOWED_QUESTIONS* = 20) ; the game never reaches 20 questions, but this can be tested by assigning the variable to a lower number
+(defglobal ?*TOTAL_ALLOWED_QUESTIONS* = 20) ; the game never reaches 20 questions, but this can be tested by assigning the variable to a lower number (> 1)
 
 (set-reset-globals TRUE) ; reset global variables when a (reset) is called to allow ?*FOUND_SOLUTION* and ?*questionNumber* to be reset with each new game
 
@@ -50,9 +52,9 @@
 (defrule startup "Starts up the game and presents the instructions to the user."
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
-   (printout t "Welcome to the Think of an Animal Game! Choose one of the following animals: ant, anteater, arctic squirrel, 
-armadillo, bat, bee, black bear, camel, clam, crab, crow, dog, dolphin, elephant, gazelle, giraffe, 
-goldfish, lizard, monkey, moose, narwhal, octopus, parrot, penguin, pig, polar bear, praying mantis, puffin, 
+   (printline "Welcome to the Think of an Animal Game! Choose one of the following animals: ant, anteater, arctic squirrel, 
+armadillo, bat, bee, black bear, camel, clam, crab, crow, dog, dolphin, elephant, giraffe, 
+goldfish, lizard, monkey, moose, narwhal, octopus, parrot, penguin, pig, polar bear, puffin, 
 rabbit, rhino, salmon, scorpion, sea lion, shrimp, snail, snake, spider, turtle, walrus, water buffalo, or zebra. 
 I will ask you a series of questions about your animal, not exceeding 20 questions.
 
@@ -61,7 +63,7 @@ Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirm
 and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
                   
 I will use the information from these questions to guess which animal you are thinking of once I have 
-enough information. Good luck!" crlf)
+enough information. Good luck!")
    (bind ?*FOUND_SOLUTION* FALSE)
 ) ; startup
 
@@ -81,7 +83,7 @@ enough information. Good luck!" crlf)
 
 /*
 * Asks the user whether the animal they are thinking of swims often. Triggers when the system
-* needs to determine whether the animal can fly to narrow down the possibilities of the given animal.
+* needs to determine whether the animal swims often to narrow down the possibilities of the given animal.
 */
 (defrule askSwimsOften "Ask if the animal the user is thinking of swims often."
    (need-swimsOften ?)
@@ -115,27 +117,27 @@ enough information. Good luck!" crlf)
    (need-legs ?)
    =>
    (bind ?legOptions (create$ 4 0 2 6 8)) ; the list of all possible values of legs the system will ask about
-   (bind ?didSucceed FALSE) ; whether or not the user has answered YES or UNSURE to any of the leg questions
+   (bind ?didSucceed FALSE)               ; whether or not the user has answered YES or UNSURE to any of the leg questions
 
    (foreach ?option ?legOptions
       (if (not ?didSucceed) then ; only continue to ask if the user has not answered YES or UNSURE to any of the questions
          (bind ?userResponse (askForFact (str-cat "Does the given animal have " ?option " legs (excluding flippers or fins)")))
 
-         (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then ; the user has responded 
+         (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then ; the user has responded with affirmation; no need to ask anything more
             (assert (legs ?option)) 
             (bind ?didSucceed TRUE)
-         elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (bind ?didSucceed FALSE) ; must keep asking until the list is exhausted
+         elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (bind ?didSucceed FALSE) ; keep asking until the list is exhausted or they answer YES or UNSURE
          elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then
-            (assert (legs unsure)) ; if they are unsure about any number of legs, stop asking further questions
-            (bind ?didSucceed TRUE)
+            (assert (legs unsure)) 
+            (bind ?didSucceed TRUE) ; if they are unsure about the number of legs, stop asking further leg questions
          )
       )
    )
 
-   (if (not ?didSucceed) then
+   (if (not ?didSucceed) then ; the user answered NO to every question
       (assert (legs unsure))
    )
-) ; askLegs (need-legs ?)
+) ; askLegs 
 
 /*
 * Asks the user whether the animal they are thinking of can survive on land. Triggers when the system
@@ -187,7 +189,9 @@ enough information. Good luck!" crlf)
    (need-isDark ?)
    =>
    (bind ?userResponse (askForFact "Is the given animal entirely either brown or black"))
-   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (isDark yes))
+   (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then 
+      (assert (isDark yes))
+      (assert (isMulticolored no)) ; if the animal is entirely brown/black, it cannot be multicolored
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (isDark no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (isDark unsure))
    )
@@ -228,7 +232,7 @@ enough information. Good luck!" crlf)
 (defrule askColdEnvironment "Ask if the animal the user is thinking of lives in a cold environment"
    (need-coldEnvironment ?)
    =>
-   (bind ?userResponse (askForFact "Does the given animal live far more often in cold or temperate environments"))
+   (bind ?userResponse (askForFact "Does the given animal live far more often in either cold or temperate environments"))
    (if (eq ?userResponse ?*VALID_YES_CHARACTER*) then (assert (coldEnvironment yes))
     elif (eq ?userResponse ?*VALID_NO_CHARACTER*) then (assert (coldEnvironment no))
     elif (eq ?userResponse ?*VALID_UNCERTAIN_CHARACTER*) then (assert (coldEnvironment unsure))
@@ -386,7 +390,6 @@ enough information. Good luck!" crlf)
    (legs 4)
    (smallerThanAHuman yes)
    (isEaten yes)
-   (isMulticolored yes)
    =>
    (printSolution "pig")
 ) ; pigRule
@@ -473,14 +476,15 @@ enough information. Good luck!" crlf)
    (isEaten no)
    (legs 2)
    (coldEnvironment no)
-   (isMulticolored ?x &~no) ; accounts for potential uncertainty in monkey's multicoloredness (will accept unsure or yes)
+   (isMulticolored ?multicolored &~no) ; accounts for potential uncertainty in monkey's multicoloredness (will accept unsure or yes)
+   (hasHeadProtrusions no)
    =>
    (printSolution "monkey")
 ) ; monkeyRule
 
 /*
-* Defines the characteristics representative of a armadillo. If all these are met, 
-* will print that the animal is a armadillo.
+* Defines the characteristics representative of an armadillo. If all these are met, 
+* will print that the animal is an armadillo.
 */
 (defrule armadilloRule "Defines the unique characteristics of a standard armadillo."
    (canFly no)
@@ -500,7 +504,7 @@ enough information. Good luck!" crlf)
 */
 (defrule penguinRule "Defines the unique characteristics of a standard penguin."
    (canFly no)
-   (swimsOften ?x &~no) ; accounts for potential uncertainty in whether a penguin swims often (will accept yes or unsure)
+   (swimsOften ?doesSwimOften &~no) ; accounts for potential uncertainty in whether a penguin swims often (will accept yes or unsure)
    (warmBlooded yes)
    (legs 2)
    (coldEnvironment yes)
@@ -515,7 +519,7 @@ enough information. Good luck!" crlf)
 */
 (defrule puffinRule "Defines the unique characteristics of a standard puffin."
    (canFly yes)
-   (swimsOften ?x &~no) ; accounts for potential uncertainty in whether a puffin swims often (will accept yes or unsure)
+   (swimsOften ?doesSwimOften &~no) ; accounts for potential uncertainty in whether a puffin swims often (will accept yes or unsure)
    (warmBlooded yes)
    (legs 2)
    (coldEnvironment yes)
@@ -532,7 +536,7 @@ enough information. Good luck!" crlf)
    (canFly no)
    (swimsOften no)
    (warmBlooded yes)
-   (legs ?x &~0 &~6 &~8) ; accounts for potential uncertainty in an arctic squirrel's number of legs (will accept 2, 4, or unsure)
+   (legs ?legNum &~0 &~6 &~8) ; accounts for potential uncertainty in an arctic squirrel's number of legs (will accept 2, 4, or unsure)
    (smallerThanAHuman yes)
    (coldEnvironment yes)
    =>
@@ -579,6 +583,7 @@ enough information. Good luck!" crlf)
    (warmBlooded yes)
    (legs 4)
    (canSurviveOnLand yes)
+   (coldEnvironment no)
    =>
    (printSolution "water buffalo")
 ) ; waterBuffaloRule
@@ -639,25 +644,6 @@ enough information. Good luck!" crlf)
    (printSolution "anteater")
 ) ; anteaterRule
 
-
-/*
-* Defines the characteristics representative of a gazelle. If all these are met, 
-* will print that the animal is a gazelle.
-*/
-(defrule gazelleRule "Defines the unique characteristics of a standard gazelle."
-   (canFly no)
-   (swimsOften no)
-   (warmBlooded yes)
-   (legs 4)
-   (smallerThanAHuman yes)
-   (isEaten no)
-   (isDark yes)
-   (coldEnvironment no)
-   (hasHeadProtrusions yes)
-   =>
-   (printSolution "gazelle")
-) ; gazelleRule
-
 /*
 * Defines the characteristics representative of a giraffe. If all these are met, 
 * will print that the animal is a giraffe.
@@ -705,7 +691,7 @@ enough information. Good luck!" crlf)
    (swimsOften yes)
    (warmBlooded no)
    (canSurviveOnLand no)
-   (legs ?x &~0) ; allows for potential uncertainty in the shrimp's number of legs (can be anything but 0 legs)
+   (legs ?legNum &~0) ; allows for potential uncertainty in the shrimp's number of legs (can be anything but 0 legs)
    (hasShell yes)
    =>
    (printSolution "shrimp")
@@ -721,7 +707,7 @@ enough information. Good luck!" crlf)
    (warmBlooded no)
    (isEaten yes)
    (canSurviveOnLand yes)
-   (legs ?x &~0) ; allows for potential uncertainty in the crab's number of legs (can be anything but 0 legs)
+   (legs ?legNum &~0) ; allows for potential uncertainty in the crab's number of legs (can be anything but 0 legs)
    (hasShell yes)
    =>
    (printSolution "crab")
@@ -743,8 +729,8 @@ enough information. Good luck!" crlf)
 ) ; clamRule
 
 /*
-* Defines the characteristics representative of a octopus. If all these are met, 
-* will print that the animal is a octopus.
+* Defines the characteristics representative of an octopus. If all these are met, 
+* will print that the animal is an octopus.
 */
 (defrule octopusRule "Defines the unique characteristics of a standard octopus."
    (canFly no)
@@ -792,7 +778,7 @@ enough information. Good luck!" crlf)
 (defrule snailRule "Defines the unique characteristics of a standard snail."
    (canFly no)
    (swimsOften no)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the snail's bloodedness (unsure or no are both acceptable)
+   (warmBlooded ?isWarmBlooded &~yes) ; accounts for potential uncertainty in the snail's bloodedness (unsure or no are both acceptable)
    (legs 0)
    (isEaten yes)
    (hasShell yes)
@@ -807,7 +793,7 @@ enough information. Good luck!" crlf)
 (defrule batRule "Defines the unique characteristics of a standard bat."
    (canFly yes)
    (swimsOften no)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the bat's bloodedness (unsure or no are both acceptable)
+   (warmBlooded ?isWarmBlooded &~yes) ; accounts for potential uncertainty in the bat's bloodedness (unsure or no are both acceptable)
    (legs 2)
    =>
    (printSolution "bat")
@@ -820,7 +806,7 @@ enough information. Good luck!" crlf)
 (defrule beeRule "Defines the unique characteristics of a standard bee."
    (canFly yes)
    (swimsOften no)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the bee's bloodedness (unsure or no are both acceptable)
+   (warmBlooded ?isWarmBlooded &~yes) ; accounts for potential uncertainty in the bee's bloodedness (unsure or no are both acceptable)
    (legs 6)
    (hasShell no)
    (isMulticolored yes)
@@ -835,7 +821,7 @@ enough information. Good luck!" crlf)
 (defrule antRule "Defines the unique characteristics of a standard ant."
    (canFly no)
    (swimsOften no)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the ant's bloodedness (unsure or no are both acceptable)
+   (warmBlooded ?isWarmBlooded &~yes) ; accounts for potential uncertainty in the ant's bloodedness (unsure or no are both acceptable)
    (legs 6)
    (isDark yes)
    => 
@@ -843,27 +829,13 @@ enough information. Good luck!" crlf)
 ) ; antRule
 
 /*
-* Defines the characteristics representative of an praying mantis. If all these are met, 
-* will print that the animal is an praying mantis.
-*/
-(defrule prayingMantisRule "Defines the unique characteristics of a standard praying mantis."
-   (canFly no)
-   (swimsOften no)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the praying mantis's bloodedness (unsure or no are both acceptable)
-   (legs 6)
-   (isDark no)
-   => 
-   (printSolution "praying mantis")
-) ; prayingMantisRule
-
-/*
-* Defines the characteristics representative of an spider. If all these are met, 
-* will print that the animal is an spider.
+* Defines the characteristics representative of a spider. If all these are met, 
+* will print that the animal is a spider.
 */
 (defrule spiderRule "Defines the unique characteristics of a standard spider."
    (canFly no)
    (swimsOften no)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the spider's bloodedness (unsure or no are both acceptable)
+   (warmBlooded ?isWarmBlooded &~yes) ; accounts for potential uncertainty in the spider's bloodedness (unsure or no are both acceptable)
    (legs 8)
    (hasShell no)
    => 
@@ -871,13 +843,13 @@ enough information. Good luck!" crlf)
 ) ; spiderRule
 
 /*
-* Defines the characteristics representative of an scorpion. If all these are met, 
-* will print that the animal is an scorpion.
+* Defines the characteristics representative of a scorpion. If all these are met, 
+* will print that the animal is a scorpion.
 */
 (defrule scorpionRule "Defines the unique characteristics of a standard scorpion."
    (canFly no)
    (swimsOften no)
-   (warmBlooded ?x &~yes) ; accounts for potential uncertainty in the scorpion's bloodedness (unsure or no are both acceptable)
+   (warmBlooded ?isWarmBlooded &~yes) ; accounts for potential uncertainty in the scorpion's bloodedness (unsure or no are both acceptable)
    (legs 8)
    (hasShell yes)
    => 
@@ -920,38 +892,44 @@ enough information. Good luck!" crlf)
 * returns the starting character. Otherwise returns FALSE.
 */
 (deffunction requestValidatedInput (?questionVal)
-   (bind ?userInput (askQuestion (str-cat ?*questionNumber* ". " ?questionVal)))
-   (bind ?firstCharacter (lowcase (sub-string 1 1 ?userInput)))
+   /*
+   * Asks the user a question formatted with the question number (1-20) followed by a period and space, followed by the request.
+   * For example: 
+   * 1. Can the given animal fly?
+   */
+   (bind ?userInput (askQuestion (str-cat ?*questionNumber* ". " ?questionVal))) 
+   (bind ?firstCharacter (lowcase (sub-string 1 1 ?userInput))) ; extracts the first character from the user's response
 
    (bind ?isYesChar (eq ?firstCharacter ?*VALID_YES_CHARACTER*))
    (bind ?isNoChar (eq ?firstCharacter ?*VALID_NO_CHARACTER*))
    (bind ?isUncertainChar (eq ?firstCharacter ?*VALID_UNCERTAIN_CHARACTER*))
    (bind ?isValid (or ?isYesChar ?isNoChar ?isUncertainChar)) ; valid only if the character starts with "y", "n", or "?", not case-sensitive
 
-   (if ?isValid then (bind ?returnVal ?firstCharacter)
-    else (bind ?returnVal FALSE) ; returns FALSE if the input is invalid
+   (if ?isValid then (bind ?returnVal ?firstCharacter) ; returns the first character if the input is valid
+    else (bind ?returnVal FALSE)                       ; returns FALSE if the input is invalid
    )
 
    (return ?returnVal)
 ) ; requestValidatedInput (?questionVal)
 
 /*
-* Asks the user whether a given fact is true or false (or if they are unsure). Valid input include any string starting 
-* with "Y" to indicate yes, "N" to indicate no, and "?" to indicate uncertainty.
+* Asks the user whether a given fact is true or false (or if they are unsure). Valid input includes any string starting 
+* with "Y" to indicate yes, "N" to indicate no, and "?" to indicate uncertainty, not case-sensitive.
 *
-* Returns "Y" if the user specified yes, "N" if the user specified no, and "?" if the user specified uncertainty. If the user exceeded
-* the total allowed questions, simply returns "".
+* Returns "Y" if the user specified yes, "N" if the user specified no, and "?" if the user specified uncertainty. If the user has exceeded
+* the total allowed questions, simply returns an empty string.
 */
 (deffunction askForFact (?questionVal)
    (bind ?returnVal "")
-   (if (not ?*FOUND_SOLUTION*) then ; as long as a solution hasn't been guessed, will keep asking questions
-      (if (> ?*questionNumber* ?*TOTAL_ALLOWED_QUESTIONS*) then ; the user has exceeded the total number of questions
+
+   (if (not ?*FOUND_SOLUTION*) then                             ; as long as a solution hasn't been guessed, will ask the question
+      (if (> ?*questionNumber* ?*TOTAL_ALLOWED_QUESTIONS*) then ; the user has exceeded the total number of questions: game over!
          (endGame)
          (printline (str-cat "I could not determine the answer within " ?*TOTAL_ALLOWED_QUESTIONS* " questions."))
        else
          (bind ?returnVal (requestValidatedInput ?questionVal))
 
-         (while (eq ?returnVal FALSE) ; while the input is invalid, continually asks for new input
+         (while (eq ?returnVal FALSE) ; while the input is invalid, continually asks for new input until it becomes valid
             (printline ?*INVALID_INPUT_MESSAGE*)
             (bind ?returnVal (requestValidatedInput ?questionVal))
          )
@@ -964,54 +942,63 @@ enough information. Good luck!" crlf)
 ) ; askForFact (?questionVal)
 
 /*
-* Triggers when an animal has been guessed, stopping the system from trying to guess any more animals. 
+* Triggers when an animal has been successfully guessed, stopping the system from trying to guess any more animals. 
 */
 (defrule gameFinished "Shuts off the system after the solution has been guessed."
    (gameOver)
    =>
-   (endGame)
-)
+   (endGame) ; ends the game by halting the rule engine
+) ; gameFinished
 
 /* 
-* Prints out the solution to the problem and asserts that the solution has been found. If the given animal's name
-* starts with a vowel, will print using "an."
+* Prints out the solution to the problem and asserts that the game is complete. If the given animal's name
+* starts with a vowel, will print using "an." The solution must be a non-empty string.
+*
+* For example, if the animal guessed is a spider, will print: The animal is a spider.
+* If the animal guessed is an elephant, for example, will print: The animal is an elephant.
 */ 
 (deffunction printSolution (?solution)
-   (bind ?prefixMessage "The animal is a")
+   (bind ?prefixMessage "The animal is a") ; regardless of whether the animal name starts with a vowel, the message will always start with this prefix
 
    (if (startsWithVowel ?solution) then (bind ?prefixMessage (str-cat ?prefixMessage "n ")) ; does start with vowel, so change "a" to "an" and add a space
-    else (bind ?prefixMessage (str-cat ?prefixMessage " ")) ; does not start with a vowel, so simply add a space after "a"
+    else (bind ?prefixMessage (str-cat ?prefixMessage " "))                                 ; does not start with a vowel, so simply add a space after "a"
    )
 
-   (printout t ?prefixMessage ?solution "." crlf)
+   (printline (str-cat ?prefixMessage ?solution ".")) ; adds a period to the end of the message
    (assert (gameOver))
-)
+
+   (return)
+) ; printSolution (?solution)
 
 /*
-* Determines whether a given non-empty string parameter starts with a vowel (excluding "y"), not case-sensitive.
+* Determines whether a given non-empty string value starts with a vowel ("a", "e", "i", "o", or "u", but not "y"), 
+* not case-sensitive.
 */
 (deffunction startsWithVowel (?string)
    (bind ?firstChar (lowcase (sub-string 1 1 ?string))) ; convert first character to lower case to ignore case
    (return (or (eq ?firstChar "a") (eq ?firstChar "e") (eq ?firstChar "i") (eq ?firstChar "o") (eq ?firstChar "u")))
-)
+) ; startsWithVowel (?string)
 
 /*
-* Ends the animal game by stopping the rule engine and resetting.
+* Ends the animal game by resetting and stopping the rule engine. This is only to be called if the system guesses the animal successfully
+* or if the number of questions is exceeded.
 */
 (deffunction endGame ()
    (reset)
    (halt) ; stops the rule engine from running to ensure no more questions are asked
    (bind ?*FOUND_SOLUTION* TRUE)
-)
+   (return)
+) ; endGame ()
 
 /*
-* Begins the animal game by clearing out the rule engine and running it.
+* Begins the animal game by clearing out the rule engine and running it. If a solution is not found, lets the user know
+* that the system could not guess the animal.
 */
 (deffunction playGame ()
    (reset)
    (run)
-   (if (not ?*FOUND_SOLUTION*) then (printout t "Sorry! I was unable to determine what animal you were thinking of." crlf))
+   (if (not ?*FOUND_SOLUTION*) then (printline "Sorry! I was unable to determine what animal you were thinking of."))
    (return)
-)
+) ; playGame ()
 
 (playGame) ; begins the game for the user to play
