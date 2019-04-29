@@ -21,11 +21,11 @@
 (defglobal ?*VALID_NO_CHARACTER* = "n") ; will accept any string starting with this as indicating "no"
 (defglobal ?*VALID_UNCERTAIN_CHARACTER* = "?") ; will accept any string starting with this as indicating uncertainty
 (defglobal ?*INVALID_INPUT_MESSAGE* = "Your input was invalid. Please try again.")
-(defglobal ?*FOUND_SOLUTION* = FALSE) ; whether or not the game has reached a solution
+(defglobal ?*foundSolution* = FALSE) ; whether or not the game has reached a solution
 (defglobal ?*ANIMAL_RULE_SUFFIX* = "Rule") ; the suffix which will follow each rule defining the characteristics of a given animal
 (defglobal ?*TOTAL_ALLOWED_QUESTIONS* = 20) ; the game never reaches 20 questions, but this can be tested by assigning the variable to a lower number (> 1)
 
-(set-reset-globals TRUE) ; reset global variables when a (reset) is called to allow ?*FOUND_SOLUTION* and ?*questionNumber* to be reset with each new game
+(set-reset-globals TRUE) ; reset global variables when a (reset) is called to allow ?*foundSolution* and ?*questionNumber* to be reset with each new game
 
 /*
 * Define all the traits which will be backward-chained, meaning if they have not been asserted but are needed
@@ -52,19 +52,18 @@
 (defrule startup "Starts up the game and presents the instructions to the user."
    (declare (salience 100)) ; guarantees that this rule will be run before all others by giving it a very high weight
    =>
-   (printline "Welcome to the Think of an Animal Game! Choose one of the following animals: ant, anteater, arctic squirrel, 
-armadillo, bat, bee, black bear, camel, clam, crab, crow, dog, dolphin, elephant, giraffe, 
-goldfish, lizard, monkey, moose, narwhal, octopus, parrot, penguin, pig, polar bear, puffin, 
-rabbit, rhino, salmon, scorpion, sea lion, shrimp, snail, snake, spider, turtle, walrus, water buffalo, or zebra. 
+   (printline "Welcome to the Think of an Animal Game!
 I will ask you a series of questions about your animal, not exceeding 20 questions.
 
 Respond \"yes\" (or any phrase beginning with \"y\" or \"Y\") to indicate affirmation, 
 \"no\" (or any phrase beginning with \"n\" or \"N\") to indicate refutation,
 and \"?\" (or any phrase beginning with \"?\") to indicate uncertainty.
+
+Call the (playGame) function to play again.
                   
 I will use the information from these questions to guess which animal you are thinking of once I have 
 enough information. Good luck!")
-   (bind ?*FOUND_SOLUTION* FALSE)
+   (bind ?*foundSolution* FALSE)
 ) ; startup
 
 /*
@@ -922,7 +921,7 @@ enough information. Good luck!")
 (deffunction askForFact (?questionVal)
    (bind ?returnVal "")
 
-   (if (not ?*FOUND_SOLUTION*) then                             ; as long as a solution hasn't been guessed, will ask the question
+   (if (not ?*foundSolution*) then                             ; as long as a solution hasn't been guessed, will ask the question
       (if (> ?*questionNumber* ?*TOTAL_ALLOWED_QUESTIONS*) then ; the user has exceeded the total number of questions: game over!
          (endGame)
          (printline (str-cat "I could not determine the answer within " ?*TOTAL_ALLOWED_QUESTIONS* " questions."))
@@ -986,7 +985,7 @@ enough information. Good luck!")
 (deffunction endGame ()
    (reset)
    (halt) ; stops the rule engine from running to ensure no more questions are asked
-   (bind ?*FOUND_SOLUTION* TRUE)
+   (bind ?*foundSolution* TRUE)
    (return)
 ) ; endGame ()
 
@@ -997,7 +996,7 @@ enough information. Good luck!")
 (deffunction playGame ()
    (reset)
    (run)
-   (if (not ?*FOUND_SOLUTION*) then (printline "Sorry! I was unable to determine what animal you were thinking of."))
+   (if (not ?*foundSolution*) then (printline "Sorry! I was unable to determine what animal you were thinking of."))
    (return)
 ) ; playGame ()
 
