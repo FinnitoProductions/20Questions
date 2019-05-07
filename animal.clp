@@ -941,13 +941,24 @@ enough information. Good luck!")
 ) ; askForFact (?questionVal)
 
 /*
-* Triggers when an animal has been successfully guessed, stopping the system from trying to guess any more animals. 
+* Triggers when no questions remain, meaning the animal could not be guessed.
 */
-(defrule gameFinished "Shuts off the system after the solution has been guessed."
-   (gameOver)
+(defrule noSolution "Warns the user if the animal could not be guessed."
+   (declare (salience -50)) ; make the rule a very low salience to guarantee it is fired near the end
+   (not (solutionFound))
    =>
-   (endGame) ; ends the game by halting the rule engine
-) ; gameFinished
+   (printline "Sorry! I was unable to determine what animal you were thinking of.")
+) ; noSolution
+
+/*
+* Triggers when the animal has been guessed, shutting off the rule engine.
+*/
+(defrule foundSolution "Halts if the solution has been found."
+   (solutionFound)
+   =>
+   (endGame)
+) ; foundSolution
+
 
 /* 
 * Prints out the solution to the problem and asserts that the game is complete. If the given animal's name
@@ -964,8 +975,8 @@ enough information. Good luck!")
    )
 
    (printline (str-cat ?prefixMessage ?solution ".")) ; adds a period to the end of the message
-   (assert (gameOver))
-
+   
+   (assert (solutionFound))
    (return)
 ) ; printSolution (?solution)
 
@@ -985,7 +996,6 @@ enough information. Good luck!")
 (deffunction endGame ()
    (reset)
    (halt) ; stops the rule engine from running to ensure no more questions are asked
-   (bind ?*foundSolution* TRUE)
    (return)
 ) ; endGame ()
 
@@ -996,7 +1006,7 @@ enough information. Good luck!")
 (deffunction playGame ()
    (reset)
    (run)
-   (if (not ?*foundSolution*) then (printline "Sorry! I was unable to determine what animal you were thinking of."))
+   (endGame)
    (return)
 ) ; playGame ()
 
