@@ -1,4 +1,4 @@
-# AnimalGame
+# 20Questions
 Code for the "20 Questions" project in my expert systems course.
 
 Plays "20 Questions" with the user where the user thinks of an animal and
